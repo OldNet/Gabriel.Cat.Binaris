@@ -7,6 +7,7 @@ using Gabriel.Cat;
 using System.IO;
 using System.Drawing;
 using Gabriel.Cat.Extension;
+using System.Collections;
 namespace Gabriel.Cat.Binaris
 {
 	/// <summary>
@@ -267,6 +268,7 @@ namespace Gabriel.Cat.Binaris
 				if (value == null)
 					value = new byte[] { 0x00 };
 				marcaFin = value;
+                Longitud = LongitudBinaria.MarcaFin;
 			}
 		}
 		public LongitudBinaria Longitud {
@@ -275,19 +277,21 @@ namespace Gabriel.Cat.Binaris
 		}
 		public long LongitudLong {
 			get { return longitudLong; }
-			set { longitudLong = value; }
+			set { longitudLong = value;
+            Longitud = LongitudBinaria.Long;
+            }
 		}
 		public uint LongitudUInt {
 			get { return longitudUInt; }
-			set { longitudUInt = value; }
+            set { longitudUInt = value; Longitud = LongitudBinaria.UInt; }
 		}
 		public ushort LongitudUShort {
 			get { return longitudUShort; }
-			set { longitudUShort = value; }
+            set { longitudUShort = value; Longitud = LongitudBinaria.UShort; }
 		}
 		public byte LongitudByte {
 			get { return longitudByte; }
-			set { longitudByte = value; }
+            set { longitudByte = value; Longitud = LongitudBinaria.Byte; }
 		}
 
 		public ElementoBinario Elemento {
@@ -301,11 +305,11 @@ namespace Gabriel.Cat.Binaris
 
 		public override byte[] GetBytes(object obj)
 		{
-			if (!(obj is IEnumerable<object>))
+			if (!(obj is IEnumerable))
 				throw new TipoException("El objeto no es IEnumerable<object>");
 			List<byte> bytesObj = new List<byte>();
 			long numItems = 0;
-			foreach (object partObj in (IEnumerable<object>)obj) {
+			foreach (object partObj in (IEnumerable)obj) {
 				numItems++;
 				bytesObj.AddRange(Elemento.GetBytes(partObj));
 			}
@@ -380,6 +384,7 @@ namespace Gabriel.Cat.Binaris
 					if (objHaPoner != null)
 						objects.Add(objHaPoner);
 				} while (objHaPoner != null);
+                objHaPoner = "";
 
 			}
 			if (objHaPoner != null)
@@ -395,7 +400,7 @@ namespace Gabriel.Cat.Binaris
 		public BitmapBinario()
 		{
 			ElementoBinario intElement = ElementoBinario.ElementosTipoAceptado(Serializar.TiposAceptados.Int);
-			ElementoIEnumerableBinario byteArrayElement = new ElementoIEnumerableBinario(ElementosTipoAceptado(Serializar.TiposAceptados.Byte), 0);
+			ElementoIEnumerableBinario byteArrayElement = new ElementoIEnumerableBinario(ElementosTipoAceptado(Serializar.TiposAceptados.Byte),(long) 0);
 			for (int i = 0; i < 3; i++)
 				PartesElemento.Afegir(intElement);
 			PartesElemento.Afegir(byteArrayElement);
@@ -439,7 +444,6 @@ namespace Gabriel.Cat.Binaris
 		public StringBinario(byte[] marcaFin)
 			: base(ElementosTipoAceptado(Serializar.TiposAceptados.Char), marcaFin)
 		{
-			Longitud = LongitudBinaria.MarcaFin;
 		}
 		public override object GetObject(Stream bytes)
 		{
@@ -449,6 +453,14 @@ namespace Gabriel.Cat.Binaris
 				str.Append(caracteres[i].ToString());
 			return str.ToString();
 		}
+        public override byte[] GetBytes(object obj)
+        {
+            List<object> caracteres = new List<object>();
+            string str = obj as string;
+            for (int i = 0; i < str.Length; i++)
+                caracteres.Add(str[i]);
+            return base.GetBytes(caracteres);
+        }
 
 		
 	}
