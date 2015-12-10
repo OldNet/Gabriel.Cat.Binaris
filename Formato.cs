@@ -338,10 +338,12 @@ namespace Gabriel.Cat.Binaris
 			//la marca fin y la longitud Que Se usara  y el elemento es el minimo...
 			long numItems = -1;
 			List<object> objects = new List<object>();
-			Stack<byte> compruebaBytes = new Stack<byte>();
+            Llista<byte> compruebaBytes = new Llista<byte>();
 			List<byte> bytesElementoMarcaFin = new List<byte>();
 			bool continua = true;
 			Object objHaPoner = null;
+            String marcaFiHex;
+            Object[] partes = null;
 			switch (Longitud) {
 				case LongitudBinaria.Byte:
 					numItems = bytes.ReadByte();
@@ -363,34 +365,39 @@ namespace Gabriel.Cat.Binaris
 					if (objHaPoner != null)
 						objects.Add(objHaPoner);
 				}
+                if (objects.Count == 0)
+                    objHaPoner = null;
 			} else {
 				//usa marca fin
+                marcaFiHex = MarcaFin.ToHex();
 				//pongo el byte en la cola
 				//miro si coincide con la marca fin
 				//si no coincide cojo el primer byte
 				//si coincide dejo de añadir bytes
 				do {
-					compruebaBytes.Push((byte)bytes.ReadByte());
+					compruebaBytes.Afegir((byte)bytes.ReadByte());
 					if (compruebaBytes.Count == marcaFin.Length) {
-						continua = compruebaBytes.ToArray().ToHex() != MarcaFin.ToHex();
+						continua = compruebaBytes.ToHex() != marcaFiHex;
 						if (continua)
 							bytesElementoMarcaFin.Add(compruebaBytes.Pop());
 					}
 				} while (continua && bytes.CanRead);
 				//ahora tengo los bytes tengo que obtener los elementos
 				bytes = new MemoryStream(bytesElementoMarcaFin.ToArray());
+               
 				do {
 					objHaPoner = Elemento.GetObject(bytes);
 					if (objHaPoner != null)
 						objects.Add(objHaPoner);
-				} while (objHaPoner != null);
-                objHaPoner = "";
+				} while (objHaPoner != null&&!bytes.EndOfStream());
+                if (objects.Count == 0)
+                    objHaPoner = null;
 
 			}
 			if (objHaPoner != null)
-				return objects.ToArray();
-			else
-				return null;
+				partes= objects.ToArray();
+            return partes;
+
 		}
 	}
 
@@ -399,40 +406,28 @@ namespace Gabriel.Cat.Binaris
 	{
 		public BitmapBinario()
 		{
-			ElementoBinario intElement = ElementoBinario.ElementosTipoAceptado(Serializar.TiposAceptados.Int);
-			ElementoIEnumerableBinario byteArrayElement = new ElementoIEnumerableBinario(ElementosTipoAceptado(Serializar.TiposAceptados.Byte),(long) 0);
-			for (int i = 0; i < 3; i++)
-				PartesElemento.Afegir(intElement);
-			PartesElemento.Afegir(byteArrayElement);
+			PartesElemento.Afegir(new ElementoIEnumerableBinario(ElementosTipoAceptado(Serializar.TiposAceptados.Byte),(uint) 0));
 		}
 
 		public override object GetObject(object[] parts)
 		{
 			Bitmap bmp = null;
-			if (parts.Length == 4) {
-				bmp = new Bitmap((int)parts[0], (int)parts[1], (System.Drawing.Imaging.PixelFormat)parts[2]);
-				bmp.SetBytes((byte[])parts[3]);
-			}
+            if (parts.Length == 1 && parts[0] is object[])
+                bmp = new Bitmap(new MemoryStream(((object[])parts[0]).Casting<byte>().ToArray()));
 			return bmp;
 		}
 
 		public override byte[] GetBytes(object obj)
 		{
-			Bitmap bmp = obj as Bitmap;
-			List<byte> bytes = new List<byte>();
-			ElementoBinario intElement = ElementoBinario.ElementosTipoAceptado(Serializar.TiposAceptados.Int);
-			ElementoIEnumerableBinario byteArrayElement = new ElementoIEnumerableBinario(ElementosTipoAceptado(Serializar.TiposAceptados.Byte), 0);
-			byte[] bytesBmp;
-			if (bmp != null) {
-				bytesBmp = bmp.GetBytes();
-				byteArrayElement.LongitudLong = bytesBmp.LongLength;
-
-				bytes.AddRange(intElement.GetBytes(bmp.Height));
-				bytes.AddRange(intElement.GetBytes(bmp.Width));
-				bytes.AddRange(intElement.GetBytes((int)bmp.PixelFormat));
-				bytes.AddRange(byteArrayElement.GetBytes(bytesBmp));
-			}
-			return bytes.ToArray();
+            List<byte> bytes=new List<byte>();
+            if (obj != null)
+            {
+                bytes.AddRange( ((Bitmap)obj).ToStream(System.Drawing.Imaging.ImageFormat.Jpeg).GetAllBytes());
+                bytes.InsertRange(0, Serializar.GetBytes(Convert.ToUInt32(bytes.Count)));
+            }
+            else
+                bytes.Add((byte)0x0);
+            return bytes.ToArray();
 		}
 	}
 	public class StringBinario : ElementoIEnumerableBinario
