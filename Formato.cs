@@ -422,7 +422,7 @@ namespace Gabriel.Cat.Binaris
             List<byte> bytes=new List<byte>();
             if (obj != null)
             {
-                bytes.AddRange( ((Bitmap)obj).ToStream(System.Drawing.Imaging.ImageFormat.Jpeg).GetAllBytes());
+                bytes.AddRange(Serializar.GetBytes((Bitmap)obj));
                 bytes.InsertRange(0, Serializar.GetBytes(Convert.ToUInt32(bytes.Count)));
             }
             else
