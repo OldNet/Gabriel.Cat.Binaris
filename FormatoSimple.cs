@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Gabriel.Cat.Extension;
 using System.IO;
+using System.Collections;
 namespace Gabriel.Cat.Binaris
 {
     /// <summary>
@@ -77,14 +78,29 @@ namespace Gabriel.Cat.Binaris
        }
        public void SetBytes(Stream stream)
        {
-           if (firma.ToHex() != stream.Read(firma.Length).ToHex())
+           string firmaLeidaHex=stream.Read(firma.Length).ToHex();
+           if (firma.ToHex() !=firmaLeidaHex )
                throw new TipoException("La firma no coincide");
            este.SetBytes(stream);
+       }
+       public Object[] GetObjects(byte[] bytes)
+       {
+           SetBytes(bytes);
+           return this.Objects;
        }
        public Object[] GetObjects(Stream stream)
        {
            SetBytes(stream);
            return this.Objects;
+       }
+
+       #endregion
+
+       #region Miembros de IElementoBinario
+
+
+       public void SetObjects(object[] objs)
+       {
        }
 
        #endregion
@@ -142,9 +158,10 @@ namespace Gabriel.Cat.Binaris
        public  byte[] GetBytes()
        {
            List<byte> bytesObj = new List<byte>();
+           List<object> enumObjs = new List<object>(objs);
            bytesObj.AddRange(assemblyName.GetBytes(Objecte.GetType().AssemblyQualifiedName));
            if(objs!=null)
-               foreach (object obj in objs)
+               foreach (object obj in enumObjs)
                {
                    if (obj != null)
                    {
@@ -168,6 +185,7 @@ namespace Gabriel.Cat.Binaris
            string assemblyNameObjecte = assemblyName.GetObject(bytes) as string;
            if (ComprobarAssemblyName && Objecte.GetType().AssemblyQualifiedName != assemblyNameObjecte)
                throw new TipoException("El objeto ha deserializar no es el que se serializo...");
+           objecte = Activator.CreateInstance(Type.GetType(assemblyNameObjecte)) as IElementoBinario;
            //Objectes->AssembyName,byte[]
            string assemblyNamePartObjecte;
            byte[] bytesPartObject;
@@ -189,7 +207,7 @@ namespace Gabriel.Cat.Binaris
                    }
                    else
                    {
-                       tipo = Type.GetType(assemblyNamePartObjecte);
+                       tipo = Type.GetType(assemblyNamePartObjecte);//da problemas de recursividad infinita...por mirar...
                        parteObj = Activator.CreateInstance(tipo) as IElementoBinario;
                        if (parteObj != null)
                        {
@@ -201,8 +219,8 @@ namespace Gabriel.Cat.Binaris
                else objs.Add(null);
 
            }
-           
 
+           objecte.SetObjects(objs.ToArray());
 
        }
 
@@ -211,5 +229,6 @@ namespace Gabriel.Cat.Binaris
    {
        byte[] GetBytes();
        void SetBytes(byte[] bytes);
+       void SetObjects(Object[] objs);
    }
 }
