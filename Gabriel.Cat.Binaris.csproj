@@ -45,6 +45,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BuscarBloques.cs" />
+    <Compile Include="ClaseExtension.cs" />
     <Compile Include="EditarBinarios.cs" />
     <Compile Include="Formato.cs" />
     <Compile Include="FormatoSimple.cs" />

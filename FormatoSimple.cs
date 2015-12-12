@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Gabriel.Cat.Extension;
 using System.IO;
 using System.Collections;
+
 namespace Gabriel.Cat.Binaris
 {
     /// <summary>
@@ -16,15 +17,24 @@ namespace Gabriel.Cat.Binaris
        byte[] firma;
        ElementoBinarioDescriptivo este;
        public FormatoSimple() : this(Formato.firmaDefault) { }
-       public FormatoSimple(byte[] firma)
+       public FormatoSimple(byte[] firma) : this(null, firma) { }
+       public FormatoSimple(IElementoBinario parent) : this(parent,Formato.firmaDefault) { }
+       public FormatoSimple(IElementoBinario parent,byte[] firma)
        {
+           if(parent==null)
+             parent=this;
            this.firma = firma;
-
-           este = new ElementoBinarioDescriptivo(this);
+           este = new ElementoBinarioDescriptivo(parent);
+       }
+       public IElementoBinario Parent
+       {
+           get { return este.Objecte; }
+           set { este.Objecte = value; }
        }
        public object[] Objects
        {
            get { return este.Objectes; }
+           set { este.Objectes = value; }
        }
        public void Vaciar()
        {
@@ -69,13 +79,7 @@ namespace Gabriel.Cat.Binaris
            return bytesObjs;
 
        }
-       public void SetBytes(byte[] bytes)
-       {
-           MemoryStream ms = new MemoryStream(bytes);
-           SetBytes(ms);
-           ms.Close();
-        
-       }
+
        public void SetBytes(Stream stream)
        {
            string firmaLeidaHex=stream.Read(firma.Length).ToHex();
@@ -85,7 +89,7 @@ namespace Gabriel.Cat.Binaris
        }
        public Object[] GetObjects(byte[] bytes)
        {
-           SetBytes(bytes);
+           this.SetBytes(bytes);
            return this.Objects;
        }
        public Object[] GetObjects(Stream stream)
@@ -101,6 +105,8 @@ namespace Gabriel.Cat.Binaris
 
        public void SetObjects(object[] objs)
        {
+           este.Vaciar();
+           este.Añadir(objs);
        }
 
        #endregion
@@ -127,7 +133,9 @@ namespace Gabriel.Cat.Binaris
        }
        public Object[] Objectes
        {
-           get{return objs.ToArray();}
+           get { return objs.ToArray(); }
+           set { Vaciar(); Añadir(value); }
+           
        }
        public void Vaciar()
        {
@@ -135,6 +143,7 @@ namespace Gabriel.Cat.Binaris
        }
        public void Añadir(IEnumerable<object> objs)
        {
+           if(objs!=null)
            foreach(object obj in objs)
                Añadir(obj);
        }
@@ -166,7 +175,7 @@ namespace Gabriel.Cat.Binaris
                    if (obj != null)
                    {
                        bytesObj.AddRange(assemblyName.GetBytes(obj.GetType().AssemblyQualifiedName));//nombre
-                       if (!(obj is IElementoBinario))//datos
+                       if (!(obj  is IElementoBinario))//datos
                            bytesObj.AddRange(datos.GetBytes(Serializar.GetBytes(obj)));
                        else
                            bytesObj.AddRange(datos.GetBytes(((IElementoBinario)obj).GetBytes()));
@@ -191,6 +200,9 @@ namespace Gabriel.Cat.Binaris
            byte[] bytesPartObject;
            Type tipo;
            IElementoBinario parteObj;
+           Object[] partsObjIElementoBinario;
+           ElementoBinarioDescriptivo subElemento;
+
            objs.Clear();
            while (!bytes.EndOfStream())
            {
@@ -207,11 +219,14 @@ namespace Gabriel.Cat.Binaris
                    }
                    else
                    {
-                       tipo = Type.GetType(assemblyNamePartObjecte);//da problemas de recursividad infinita...por mirar...
+                       tipo = Type.GetType(assemblyNamePartObjecte);
                        parteObj = Activator.CreateInstance(tipo) as IElementoBinario;
                        if (parteObj != null)
                        {
-                           parteObj.SetBytes(bytesPartObject);
+                           subElemento = new ElementoBinarioDescriptivo(parteObj); 
+                           subElemento.SetBytes(bytesPartObject);
+                           partsObjIElementoBinario = subElemento.Objectes;
+                           parteObj.SetObjects(partsObjIElementoBinario);
                            objs.Add(parteObj);
                        }
                    }
@@ -224,11 +239,16 @@ namespace Gabriel.Cat.Binaris
 
        }
 
+       public void SetBytes(byte[] bytes)
+       {
+           SetBytes(new MemoryStream(bytes));
+       }
+
    }
    public interface IElementoBinario
    {
        byte[] GetBytes();
-       void SetBytes(byte[] bytes);
+       void SetBytes(Stream bytesFile);
        void SetObjects(Object[] objs);
    }
 }
