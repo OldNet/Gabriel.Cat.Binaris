@@ -387,14 +387,14 @@ namespace Gabriel.Cat.Binaris
             }
             if (numItems >= 0)
             {
+                partes = new Object[numItems];
                 for (long i = 0; i < numItems; i++)
                 {
                     objHaPoner = Elemento.GetObject(bytes);
                     if (objHaPoner != null)
-                        objects.Add(objHaPoner);
+                        partes[i]=objHaPoner;
                 }
-                if (objects.Count == 0)
-                    objHaPoner = null;
+
             }
             else
             {
@@ -423,12 +423,10 @@ namespace Gabriel.Cat.Binaris
                     if (objHaPoner != null)
                         objects.Add(objHaPoner);
                 } while (objHaPoner != null && !bytes.EndOfStream());
-                if (objects.Count == 0)
-                    objHaPoner = null;
-
-            }
-            if (objHaPoner != null)
+                if (objects.Count != 0)
                 partes = objects.ToArray();
+            }
+               
             return partes;
 
         }
@@ -441,7 +439,15 @@ namespace Gabriel.Cat.Binaris
         {
             PartesElemento.Afegir(new ElementoIEnumerableBinario(ElementosTipoAceptado(Serializar.TiposAceptados.Byte), (uint)0));
         }
-
+        public override object GetObject(Stream bytes)
+        {
+            if (bytes.ReadByte() != (byte)0x00)
+            {
+                bytes.Position--;
+                return base.GetObject(bytes);
+            }
+            else return null;
+        }
         public override object GetObject(object[] parts)
         {
             Bitmap bmp = null;
@@ -477,7 +483,8 @@ namespace Gabriel.Cat.Binaris
         {
             object[] caracteres = (object[])base.GetObject(bytes);
             StringBuilder str = new StringBuilder();
-            for (int i = 0; i < caracteres.Length; i++)
+            if(caracteres!=null)
+              for (int i = 0; i < caracteres.Length; i++)
                 str.Append(caracteres[i].ToString());
             return str.ToString();
         }
