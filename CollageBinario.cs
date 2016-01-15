@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Gabriel.Cat.Extension;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
@@ -21,6 +22,10 @@ namespace Gabriel.Cat.Binaris
                 LongitudUInt= Convert.ToUInt32((obj as Collage).Count);
             }
             return base.GetBytes(obj);
+        }
+        public override object GetObject(Stream bytes)
+        {
+            return new Collage(((object[])base.GetObject(bytes)).Casting<ImageFragment>(false));
         }
     }
     public class ImageFragmentBinario : ElementoBinario
