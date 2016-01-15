@@ -107,7 +107,7 @@ namespace Gabriel.Cat.Binaris
     {
         public abstract byte[] GetBytes(Object obj);
         public Object GetObject(byte[] bytes)
-        { return new MemoryStream(bytes); }
+        { return GetObject(new MemoryStream(bytes)); }
         public abstract Object GetObject(Stream bytes);
         public static ElementoBinario ElementosTipoAceptado(Serializar.TiposAceptados tipo)
         {
@@ -143,6 +143,12 @@ namespace Gabriel.Cat.Binaris
                     break;
                 case Serializar.TiposAceptados.Bitmap:
                     elemento = new BitmapBinario();
+                    break;
+                case Serializar.TiposAceptados.Point:
+                    elemento = new ElementoSimpleBinario(tipo, 8);
+                    break;
+                case Serializar.TiposAceptados.PointZ:
+                    elemento = new ElementoSimpleBinario(tipo, 12);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -426,7 +432,8 @@ namespace Gabriel.Cat.Binaris
                 if (objects.Count != 0)
                 partes = objects.ToArray();
             }
-               
+            if (partes == null)
+                partes = new object[0];   
             return partes;
 
         }
@@ -441,20 +448,23 @@ namespace Gabriel.Cat.Binaris
         }
         public override object GetObject(Stream bytes)
         {
+            Object obj = null;
             if (bytes.ReadByte() != (byte)0x00)
             {
                 bytes.Position--;
-                return base.GetObject(bytes);
+                obj= base.GetObject(bytes);
             }
-            else return null;
+            return obj;
         }
         public override object GetObject(object[] parts)
         {
             Bitmap bmp = null;
             if (parts.Length == 1 && parts[0] is object[])
-                bmp = new Bitmap(new MemoryStream(((object[])parts[0]).Casting<byte>().ToArray()));
+                bmp = Serializar.ToBitmap(((object[])parts[0]).CastingToByte());
             return bmp;
         }
+
+
 
         public override byte[] GetBytes(object obj)
         {

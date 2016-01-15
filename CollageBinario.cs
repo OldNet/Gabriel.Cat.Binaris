@@ -11,7 +11,7 @@ namespace Gabriel.Cat.Binaris
 {
    public class CollageBinario:ElementoIEnumerableBinario
     {
-        public CollageBinario() : base(new ImageFragmentBinario(),null)
+        public CollageBinario() : base(new ImageFragmentBinario(),(uint)0)
         {
 
         }
@@ -28,17 +28,21 @@ namespace Gabriel.Cat.Binaris
             return new Collage(((object[])base.GetObject(bytes)).Casting<ImageFragment>(false));
         }
     }
-    public class ImageFragmentBinario : ElementoBinario
+    public class ImageFragmentBinario : ElementoComplejoBinario
     {
-
+        public ImageFragmentBinario()
+        {
+            base.PartesElemento.Afegir(ElementoBinario.ElementosTipoAceptado(Serializar.TiposAceptados.PointZ));
+            base.PartesElemento.Afegir(ElementoBinario.ElementosTipoAceptado(Serializar.TiposAceptados.Bitmap));
+        }
         public override byte[] GetBytes(object obj)
         {
             List<byte> bytesObj = new List<byte>();
             ImageFragment fragment= obj as ImageFragment;
             if (fragment!=null)
             {
-                bytesObj.AddRange(Serializar.GetBytes(fragment.Location));
-                bytesObj.AddRange(Serializar.GetBytes(fragment.Image));
+                bytesObj.AddRange(PartesElemento[0].GetBytes(fragment.Location));
+                bytesObj.AddRange(PartesElemento[1].GetBytes(fragment.Image));
             }
             else {
                 bytesObj.Add(0x00);
@@ -46,16 +50,17 @@ namespace Gabriel.Cat.Binaris
             return bytesObj.ToArray();
         }
 
-        public override object GetObject(Stream bytes)
+        public override object GetObject(object[] parts)
         {
-            PointZ location = Serializar.DameObjetoAceptado(Serializar.TiposAceptados.PointZ, bytes) as PointZ;
+            PointZ location = parts[0] as PointZ;
             Bitmap bmp = null;
-            ImageFragment fragment=null;
+            ImageFragment fragment = null;
             if (location != null)
-                bmp = Serializar.DameObjetoAceptado(Serializar.TiposAceptados.Bitmap, bytes) as Bitmap;
-            if (bmp!=null)
-            fragment = new ImageFragment(bmp, location);
+                bmp = parts[1] as Bitmap;
+            if (bmp != null)
+                fragment = new ImageFragment(bmp, location);
             return fragment;
         }
+
     }
 }
