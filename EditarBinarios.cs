@@ -10,6 +10,14 @@ namespace Gabriel.Cat.Binaris
 {
     public static class EditarBinarios
     {
+
+        public static void ModificaBytes(this FileInfo archivo, long posicionInicio, byte[] bytesHaPoner)
+        {
+            byte[] bytesArchivo = archivo.ModificaBytesCopy(posicionInicio, bytesHaPoner);
+            string pathArchivo = archivo.FullName;
+            archivo.Delete();
+            bytesHaPoner.Save(pathArchivo);
+        }
         /// <summary>
         /// Sustituye los bytes que encuentra por los nuevos empezando por la posicion indicada
         /// </summary>
@@ -18,21 +26,21 @@ namespace Gabriel.Cat.Binaris
         /// <param name="bytesNuevos"></param>
         /// <param name="añadeSiHaceFalta">hace el archivo mas grande</param>
         /// <returns></returns>
-        public static Byte[] ModificaBytes(this FileInfo archivo, long posicion, Byte[] bytesNuevos,bool añadeSiHaceFalta=false)
+        public static Byte[] ModificaBytesCopy(this FileInfo archivo, long posicion, Byte[] bytesNuevos,bool añadeSiHaceFalta=false)
         {
             Stream st=archivo.GetStream();
-            Byte[] bytesArchivoNuevo= ModificaBytes(st,posicion,bytesNuevos,añadeSiHaceFalta);
+            Byte[] bytesArchivoNuevo= ModificaBytesCopy(st,posicion,bytesNuevos,añadeSiHaceFalta);
             st.Close();
             return bytesArchivoNuevo;
         }
-        public static Byte[] ModificaBytes(this IEnumerable<Byte> archivo, long posicion, Byte[] bytesNuevos, bool añadeSiHaceFalta = false)
+        public static Byte[] ModificaBytesCopy(this IEnumerable<Byte> archivo, long posicion, Byte[] bytesNuevos, bool añadeSiHaceFalta = false)
         {
             Stream st = new MemoryStream(archivo.ToArray());
-            Byte[] bytesArchivoNuevo = ModificaBytes(st, posicion, bytesNuevos,añadeSiHaceFalta);
+            Byte[] bytesArchivoNuevo = ModificaBytesCopy(st, posicion, bytesNuevos,añadeSiHaceFalta);
             st.Close();
             return bytesArchivoNuevo;
         }
-        public static Byte[] ModificaBytes(this Stream archivo, long posicion, Byte[] bytesNuevos, bool añadeSiHaceFalta = false)
+        public static Byte[] ModificaBytesCopy(this Stream archivo, long posicion, Byte[] bytesNuevos, bool añadeSiHaceFalta = false)
         {
             //valido los parametros
             if (posicion < 0)
@@ -59,29 +67,31 @@ namespace Gabriel.Cat.Binaris
             }
             while (posicionActual < posicion)
                 archivoModificado.Add((Byte)0x00);//pongo bytes en blanco hasta llegar a la posicion (pasa cuando se tiene que hacer mas grande)
-            if ((añadeSiHaceFalta||!archivo.EndOfStream())&&posicionArray<bytesNuevos.LongLength)
+
+            while ((añadeSiHaceFalta||!archivo.EndOfStream())&&posicionArray<bytesNuevos.LongLength)
             {
                 if (!archivo.EndOfStream())
                     archivo.ReadByte();//sustituyo los bytes asi que no necesito el viejo
                 archivoModificado.Add(bytesNuevos[posicionArray++]);
             }
-            if (!archivo.EndOfStream())
+
+            while (!archivo.EndOfStream())
                 archivoModificado.Add((Byte)archivo.ReadByte());//pongo los que faltan del archivo
             archivo.Position = posicionStream;
             return archivoModificado.ToArray();//devuelvo el archivo con los bytes modificados
         }
 
-        public static Byte[] AñadeBytes(this FileInfo archivo, long posicion, Byte[] bytesNuevos)
+        public static Byte[] AñadeBytesCopy(this FileInfo archivo, long posicion, Byte[] bytesNuevos)
         {
             Stream st = archivo.GetStream();
-            Byte[] bytesArchivoNuevo = AñadeBytes(st, posicion, bytesNuevos);
+            Byte[] bytesArchivoNuevo = AñadeBytesCopy(st, posicion, bytesNuevos);
             st.Close();
             return bytesArchivoNuevo;
         }
-        public static Byte[] AñadeBytes(this IEnumerable<Byte> archivo, long posicion, Byte[] bytesNuevos)
+        public static Byte[] AñadeBytesCopy(this IEnumerable<Byte> archivo, long posicion, Byte[] bytesNuevos)
         {
             Stream st = new MemoryStream(archivo.ToArray());
-            Byte[] bytesArchivoNuevo = AñadeBytes(st, posicion, bytesNuevos);
+            Byte[] bytesArchivoNuevo = AñadeBytesCopy(st, posicion, bytesNuevos);
             st.Close();
             return bytesArchivoNuevo;
         }
@@ -92,7 +102,7 @@ namespace Gabriel.Cat.Binaris
         /// <param name="posicion"></param>
         /// <param name="bytesNuevos"></param>
         /// <returns>devuelve los bytes con los nuevos añadidos donde toca</returns>
-        public static Byte[] AñadeBytes(this Stream archivo, long posicion, Byte[] bytesNuevos)
+        public static Byte[] AñadeBytesCopy(this Stream archivo, long posicion, Byte[] bytesNuevos)
         {
             //valido los parametros
             if (posicion < 0)
