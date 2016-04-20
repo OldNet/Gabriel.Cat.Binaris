@@ -51,8 +51,6 @@ namespace Gabriel.Cat.Binaris
             long posicionStream = stream.Position;
             long posicionInicioBloque = -1;//si no encuntra devuelve -1
             long contador = 0;
-            if (!stream.CanRead)
-                throw new System.IO.IOException("Imposible de leer");
             stream.Position = inicio;
             while (posicionInicioBloque == -1 && !stream.EndOfStream())
             {
