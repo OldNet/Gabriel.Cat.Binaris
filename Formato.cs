@@ -248,8 +248,9 @@ namespace Gabriel.Cat.Binaris
         public ElementoIEnumerableBinario(ElementoBinario elemento, LongitudBinaria longitud)
         {
             Elemento = elemento;
-            Longitud = longitud;
             MarcaFin = null;
+            Longitud = longitud;
+            
         }
         public ElementoIEnumerableBinario(ElementoBinario elemento, byte[] marcaFin)
             : this(elemento, LongitudBinaria.MarcaFin)
@@ -361,6 +362,8 @@ namespace Gabriel.Cat.Binaris
                     bytesObj.InsertRange(0, Serializar.GetBytes(Convert.ToInt64(numItems)));
                     break;
                 case LongitudBinaria.MarcaFin:
+                    if (bytesObj.Contains(MarcaFin))
+                        throw new Exception("Se ha encontrado los bytes de la marca de fin en los bytes a guardar");
                     bytesObj.AddRange(MarcaFin);
                     break;
             }
@@ -376,7 +379,7 @@ namespace Gabriel.Cat.Binaris
             List<byte> bytesElementoMarcaFin = new List<byte>();
             bool continua = true;
             Object objHaPoner = null;
-            String marcaFiHex;
+           // String marcaFiHex;
             Object[] partes = null;
             switch (Longitud)
             {
@@ -408,7 +411,7 @@ namespace Gabriel.Cat.Binaris
             else
             {
                 //usa marca fin
-                marcaFiHex = MarcaFin.ToHex();
+               // marcaFiHex = MarcaFin.ToHex();
                 //pongo el byte en la cola
                 //miro si coincide con la marca fin
                 //si no coincide cojo el primer byte
@@ -418,7 +421,7 @@ namespace Gabriel.Cat.Binaris
                     compruebaBytes.Afegir((byte)bytes.ReadByte());
                     if (compruebaBytes.Count == marcaFin.Length)
                     {
-                        continua = compruebaBytes.ToHex() != marcaFiHex;
+                        continua = !compruebaBytes.SequenceEqual(marcaFin);
                         if (continua)
                             bytesElementoMarcaFin.Add(compruebaBytes.Pop());
                     }
@@ -447,7 +450,7 @@ namespace Gabriel.Cat.Binaris
     {
         public BitmapBinario()
         {
-            PartesElemento.Afegir(new ElementoIEnumerableBinario(ElementosTipoAceptado(Serializar.TiposAceptados.Byte), (uint)0));
+            PartesElemento.Afegir(new ElementoIEnumerableBinario(ElementosTipoAceptado(Serializar.TiposAceptados.Byte), ElementoIEnumerableBinario.LongitudBinaria.Long));
         }
         public override object GetObject(Stream bytes)
         {
@@ -476,7 +479,7 @@ namespace Gabriel.Cat.Binaris
             if (bmp!=null)
             {
                 bytes.AddRange(Serializar.GetBytes(bmp));
-                bytes.InsertRange(0, Serializar.GetBytes(Convert.ToUInt32(bytes.Count)));
+                bytes.InsertRange(0, Serializar.GetBytes(Convert.ToInt64(bytes.Count)));
             }
             else
                 bytes.Add((byte)0x0);
@@ -488,6 +491,7 @@ namespace Gabriel.Cat.Binaris
         public StringBinario()
             : this(null)
         {
+        	Longitud=LongitudBinaria.Long;
         }
         public StringBinario(byte[] marcaFin)
             : base(ElementosTipoAceptado(Serializar.TiposAceptados.Char), marcaFin)
