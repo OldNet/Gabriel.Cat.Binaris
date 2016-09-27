@@ -71,14 +71,14 @@ namespace Gabriel.Cat.Binaris
             get { return elementosArchivo; }
             private set { elementosArchivo = value; }
         }
-        public Object[] GetObjects(byte[] bytes)
+        public Object[] GetPartsOfObject(byte[] bytes)
         {
             MemoryStream ms = new MemoryStream(bytes);
-            object[] objs = GetObjects(ms);
+            object[] objs = GetPartsOfObject(ms);
             ms.Close();
             return objs;
         }
-        public Object[] GetObjects(Stream st)
+        public Object[] GetPartsOfObject(Stream st)
         {
             List<Object> objs = new List<object>();
             if (st.Read(firma.Length).ToHex() != firma.ToHex())
@@ -89,10 +89,9 @@ namespace Gabriel.Cat.Binaris
             }
             return objs.ToArray();
         }
-
-        public byte[] GetBytes(IEnumerable<object> objetos)
+        public byte[] GetBytes(IEnumerable<object> parts)
         {
-            List<Object> objsList = new List<object>(objetos);
+            List<Object> objsList = new List<object>(parts);
             List<byte> bytes = new List<byte>();
             bytes.AddRange(firma);
             for (int i = 0; i < elementosArchivo.Count; i++)
@@ -227,7 +226,7 @@ namespace Gabriel.Cat.Binaris
             else
                 return null;
         }
-        public abstract object GetObject(Object[] parts);
+        protected abstract object GetObject(Object[] parts);
     }
     public class ElementoIEnumerableBinario : ElementoBinario
     {
@@ -246,7 +245,7 @@ namespace Gabriel.Cat.Binaris
         uint longitudUInt;
         long longitudLong;
         ElementoBinario elemento;
-        private ElementoIEnumerableBinario(ElementoBinario elemento, LongitudBinaria longitud)
+        public ElementoIEnumerableBinario(ElementoBinario elemento, LongitudBinaria longitud)
         {
             Elemento = elemento;
             Longitud = longitud;
@@ -331,7 +330,11 @@ namespace Gabriel.Cat.Binaris
                 elemento = value;
             }
         }
-
+        /// <summary>
+        /// Obtiene los bytes de la lista de elementos
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
         public override byte[] GetBytes(object obj)
         {
             if (!(obj is IEnumerable))
@@ -456,7 +459,7 @@ namespace Gabriel.Cat.Binaris
             }
             return obj;
         }
-        public override object GetObject(object[] parts)
+        protected override object GetObject(object[] parts)
         {
             Bitmap bmp = null;
             if (parts.Length == 1 && parts[0] is object[])
@@ -469,9 +472,10 @@ namespace Gabriel.Cat.Binaris
         public override byte[] GetBytes(object obj)
         {
             List<byte> bytes = new List<byte>();
-            if (obj != null && obj is Bitmap)
+            Bitmap bmp = obj as Bitmap;
+            if (bmp!=null)
             {
-                bytes.AddRange(Serializar.GetBytes((Bitmap)obj));
+                bytes.AddRange(Serializar.GetBytes(bmp));
                 bytes.InsertRange(0, Serializar.GetBytes(Convert.ToUInt32(bytes.Count)));
             }
             else
