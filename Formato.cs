@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Gabriel.Cat;
@@ -78,7 +77,7 @@ namespace Gabriel.Cat.Binaris
             ms.Close();
             return objs;
         }
-        public Object[] GetPartsOfObject(Stream st)
+        public Object[] GetPartsOfObject(MemoryStream st)
         {
             List<Object> objs = new List<object>();
             if (st.Read(firma.Length).ToHex() != firma.ToHex())
@@ -107,7 +106,7 @@ namespace Gabriel.Cat.Binaris
         public abstract byte[] GetBytes(Object obj);
         public Object GetObject(byte[] bytes)
         { return GetObject(new MemoryStream(bytes)); }
-        public abstract Object GetObject(Stream bytes);
+        public abstract Object GetObject(MemoryStream bytes);
         public static ElementoBinario ElementosTipoAceptado(Serializar.TiposAceptados tipo)
         {
             ElementoBinario elemento = null;
@@ -194,7 +193,7 @@ namespace Gabriel.Cat.Binaris
             return Serializar.GetBytes(obj);
         }
 
-        public override object GetObject(Stream bytes)
+        public override object GetObject(MemoryStream bytes)
         {
             return Serializar.ToTipoAceptado(tipoDatos, bytes.Read(NumeroBytes));
         }
@@ -211,7 +210,7 @@ namespace Gabriel.Cat.Binaris
             get { return partesElemento; }
             private set { partesElemento = value; }
         }
-        public override object GetObject(Stream bytes)
+        public override object GetObject(MemoryStream bytes)
         {
             object[] parts = new object[partesElemento.Count];
             long numNull = 0;
@@ -370,14 +369,16 @@ namespace Gabriel.Cat.Binaris
             return bytesObj.ToArray();
         }
 
-        public override object GetObject(Stream bytes)
+        public override object GetObject(MemoryStream bytes)
         {
+           
             //la marca fin y la longitud Que Se usara  y el elemento es el minimo...
             long numItems = -1;
             List<object> objects = new List<object>();
             Llista<byte> compruebaBytes = new Llista<byte>();
             List<byte> bytesElementoMarcaFin = new List<byte>();
-            bool continua = true;
+            byte[] bufferStreamBytes,bytesObj;
+            ByteArrayStream bs = bytes;
             Object objHaPoner = null;
            // String marcaFiHex;
             Object[] partes = null;
@@ -411,32 +412,30 @@ namespace Gabriel.Cat.Binaris
             else
             {
                 //usa marca fin
-               // marcaFiHex = MarcaFin.ToHex();
                 //pongo el byte en la cola
                 //miro si coincide con la marca fin
                 //si no coincide cojo el primer byte
                 //si coincide dejo de añadir bytes
-                do
+                bufferStreamBytes = bytes.GetBuffer();
+                try
                 {
-                    compruebaBytes.Afegir((byte)bytes.ReadByte());
-                    if (compruebaBytes.Count == marcaFin.Length)
-                    {
-                        continua = !compruebaBytes.SequenceEqual(marcaFin);
-                        if (continua)
-                            bytesElementoMarcaFin.Add(compruebaBytes.Pop());
-                    }
-                } while (continua && bytes.CanRead);
-                //ahora tengo los bytes tengo que obtener los elementos
-                bytes = new MemoryStream(bytesElementoMarcaFin.ToArray());
+                    bytesObj = bufferStreamBytes.SubArray((Hex)bytes.Position, bufferStreamBytes.BuscarArray((Hex)bytes.Position, marcaFin));
 
-                do
+                    //ahora tengo los bytes tengo que obtener los elementos
+                    bytes = new MemoryStream(bytesObj);
+
+                    do
+                    {
+                        objHaPoner = Elemento.GetObject(bytes);
+                        if (objHaPoner != null)
+                            objects.Add(objHaPoner);
+                    } while (objHaPoner != null && !bytes.EndOfStream());
+                    if (objects.Count != 0)
+                        partes = objects.ToArray();
+                }catch
                 {
-                    objHaPoner = Elemento.GetObject(bytes);
-                    if (objHaPoner != null)
-                        objects.Add(objHaPoner);
-                } while (objHaPoner != null && !bytes.EndOfStream());
-                if (objects.Count != 0)
-                partes = objects.ToArray();
+                    throw new FormatException("No se ha encontrado la marca de fin");
+                }
             }
             if (partes == null)
                 partes = new object[0];   
@@ -452,7 +451,7 @@ namespace Gabriel.Cat.Binaris
         {
             PartesElemento.Afegir(new ElementoIEnumerableBinario(ElementosTipoAceptado(Serializar.TiposAceptados.Byte), ElementoIEnumerableBinario.LongitudBinaria.Long));
         }
-        public override object GetObject(Stream bytes)
+        public override object GetObject(MemoryStream bytes)
         {
             Object obj = null;
             if (bytes.ReadByte() != (byte)0x00)
@@ -497,7 +496,7 @@ namespace Gabriel.Cat.Binaris
             : base(ElementosTipoAceptado(Serializar.TiposAceptados.Char), marcaFin)
         {
         }
-        public override object GetObject(Stream bytes)
+        public override object GetObject(MemoryStream bytes)
         {
             object[] caracteres = (object[])base.GetObject(bytes);
             StringBuilder str = new StringBuilder();
@@ -524,7 +523,7 @@ namespace Gabriel.Cat.Binaris
             : base(Serializar.TiposAceptados.Long, 8)
         {
         }
-        public override object GetObject(Stream bytes)
+        public override object GetObject(MemoryStream bytes)
         {
             object objTime = base.GetObject(bytes);
             if (objTime != null)

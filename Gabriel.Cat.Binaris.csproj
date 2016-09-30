@@ -44,13 +44,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BuscarBloques.cs" />
+    <Compile Include="ByteArrayStream.cs" />
     <Compile Include="ClaseExtension.cs" />
-    <Compile Include="EditarBinarios.cs" />
     <Compile Include="Formato.cs" />
     <Compile Include="FormatoSimple.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ReadBloque.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

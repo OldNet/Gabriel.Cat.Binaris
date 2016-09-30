@@ -80,7 +80,7 @@ namespace Gabriel.Cat.Binaris
 
        }
 
-       public void SetBytes(Stream stream)
+       public void SetBytes(MemoryStream stream)
        {
            string firmaLeidaHex=stream.Read(firma.Length).ToHex();
            if (firma.ToHex() !=firmaLeidaHex )
@@ -92,7 +92,7 @@ namespace Gabriel.Cat.Binaris
            this.SetBytes(bytes);
            return this.Objects;
        }
-       public Object[] GetObjects(Stream stream)
+       public Object[] GetObjects(MemoryStream stream)
        {
            SetBytes(stream);
            return this.Objects;
@@ -188,7 +188,7 @@ namespace Gabriel.Cat.Binaris
            return bytesObj.ToArray();
        }
 
-       public  void SetBytes(System.IO.Stream bytes)
+       public  void SetBytes(MemoryStream bytes)
        {
            //Assembly name objecte
            string assemblyNameObjecte = assemblyName.GetObject(bytes) as string;
@@ -248,7 +248,7 @@ namespace Gabriel.Cat.Binaris
    public interface IElementoBinario
    {
        byte[] GetBytes();
-       void SetBytes(Stream bytesFile);
+       void SetBytes(MemoryStream bytesFile);
        void SetObjects(Object[] objs);
    }
 }
