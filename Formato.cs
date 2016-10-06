@@ -239,16 +239,12 @@ namespace Gabriel.Cat.Binaris
         }
         byte[] marcaFin;
         LongitudBinaria longitud;
-        byte longitudByte;
-        ushort longitudUShort;
-        uint longitudUInt;
-        long longitudLong;
         ElementoBinario elemento;
-        public ElementoIEnumerableBinario(ElementoBinario elemento, LongitudBinaria longitud)
+        public ElementoIEnumerableBinario(ElementoBinario elemento, LongitudBinaria unidadCantidadElementos)
         {
             Elemento = elemento;
             MarcaFin = null;
-            Longitud = longitud;
+            Longitud = unidadCantidadElementos;
             
         }
         public ElementoIEnumerableBinario(ElementoBinario elemento, byte[] marcaFin)
@@ -256,26 +252,7 @@ namespace Gabriel.Cat.Binaris
         {
             MarcaFin = marcaFin;
         }
-        public ElementoIEnumerableBinario(ElementoBinario elemento, byte longitud)
-            : this(elemento, LongitudBinaria.Byte)
-        {
-            LongitudByte = longitud;
-        }
-        public ElementoIEnumerableBinario(ElementoBinario elemento, ushort longitud)
-            : this(elemento, LongitudBinaria.UShort)
-        {
-            LongitudUShort = longitud;
-        }
-        public ElementoIEnumerableBinario(ElementoBinario elemento, uint longitud)
-            : this(elemento, LongitudBinaria.UInt)
-        {
-            LongitudUInt = longitud;
-        }
-        public ElementoIEnumerableBinario(ElementoBinario elemento, long longitud)
-            : this(elemento, LongitudBinaria.Long)
-        {
-            LongitudLong = longitud;
-        }
+      
         /// <summary>
         /// Sirve para acabar la lectura sin saber cuantos elementos abran, si es null la marcaFin es 0x00
         /// </summary>
@@ -294,30 +271,6 @@ namespace Gabriel.Cat.Binaris
         {
             get { return longitud; }
             set { longitud = value; }
-        }
-        public long LongitudLong
-        {
-            get { return longitudLong; }
-            set
-            {
-                longitudLong = value;
-                Longitud = LongitudBinaria.Long;
-            }
-        }
-        public uint LongitudUInt
-        {
-            get { return longitudUInt; }
-            set { longitudUInt = value; Longitud = LongitudBinaria.UInt; }
-        }
-        public ushort LongitudUShort
-        {
-            get { return longitudUShort; }
-            set { longitudUShort = value; Longitud = LongitudBinaria.UShort; }
-        }
-        public byte LongitudByte
-        {
-            get { return longitudByte; }
-            set { longitudByte = value; Longitud = LongitudBinaria.Byte; }
         }
 
         public ElementoBinario Elemento
@@ -542,6 +495,12 @@ namespace Gabriel.Cat.Binaris
             : base(message)
         {
         }
+    }
+
+    public class ObjectNotSerializable:Exception
+    {
+        public ObjectNotSerializable(Type typeSerializable):base("Only can serialitze "+typeSerializable.AssemblyQualifiedName)
+        {}
     }
 
 }
