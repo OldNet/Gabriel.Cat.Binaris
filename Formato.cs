@@ -109,48 +109,15 @@ namespace Gabriel.Cat.Binaris
         public abstract Object GetObject(MemoryStream bytes);
         public static ElementoBinario ElementosTipoAceptado(Serializar.TiposAceptados tipo)
         {
-            ElementoBinario elemento = null;
-            switch (tipo)
-            {
-                case Serializar.TiposAceptados.Null:
-                case Serializar.TiposAceptados.Byte:
-                case Serializar.TiposAceptados.Bool:
-                case Serializar.TiposAceptados.Char:
-                    elemento = new ElementoSimpleBinario(tipo, 1);
-                    break;
-                case Serializar.TiposAceptados.Short:
-                case Serializar.TiposAceptados.UShort:
-                    elemento = new ElementoSimpleBinario(tipo, 2);
-                    break;
-                case Serializar.TiposAceptados.Int:
-                case Serializar.TiposAceptados.UInt:
-                    elemento = new ElementoSimpleBinario(tipo, 4);
-                    break;
-                case Serializar.TiposAceptados.Long:
-                case Serializar.TiposAceptados.ULong:
-                case Serializar.TiposAceptados.Double:
-                case Serializar.TiposAceptados.Float:
-                    elemento = new ElementoSimpleBinario(tipo, 8);
-                    break;
-
-                case Serializar.TiposAceptados.DateTime:
-                    elemento = new DateTimeBinario();
-                    break;
-                case Serializar.TiposAceptados.String:
-                    elemento = new StringBinario();
-                    break;
-                case Serializar.TiposAceptados.Bitmap:
-                    elemento = new BitmapBinario();
-                    break;
-                case Serializar.TiposAceptados.Point:
-                    elemento = new ElementoSimpleBinario(tipo, 8);
-                    break;
-                case Serializar.TiposAceptados.PointZ:
-                    elemento = new ElementoSimpleBinario(tipo, 12);
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
+            ElementoBinario elemento;
+            if (tipo == Serializar.TiposAceptados.String)
+                elemento = new StringBinario();
+            else if (tipo == Serializar.TiposAceptados.Bitmap)
+                elemento = new BitmapBinario();
+            else if (tipo == Serializar.TiposAceptados.DateTime)
+                elemento = new DateTimeBinario();
+            else
+                elemento = new ElementoSimpleBinario(tipo);
             return elemento;
         }
 
@@ -160,13 +127,10 @@ namespace Gabriel.Cat.Binaris
     {
         //char,int,long,...basicos
         Serializar.TiposAceptados tipoDatos;
-        long numeroBytes;
 
-
-        public ElementoSimpleBinario(Serializar.TiposAceptados tipo, long numeroBytes)
+        public ElementoSimpleBinario(Serializar.TiposAceptados tipo)
         {
             TipoDatos = tipo;
-            NumeroBytes = numeroBytes;
         }
         public Serializar.TiposAceptados TipoDatos
         {
@@ -178,16 +142,7 @@ namespace Gabriel.Cat.Binaris
                 tipoDatos = value;
             }
         }
-        public long NumeroBytes
-        {
-            get { return numeroBytes; }
-            set
-            {
-                if (value < 1)
-                    throw new TipoException("No puede tener una longitud negativa de bytes");
-                numeroBytes = value;
-            }
-        }
+
         public override byte[] GetBytes(object obj)
         {
             return Serializar.GetBytes(obj);
@@ -195,7 +150,7 @@ namespace Gabriel.Cat.Binaris
 
         public override object GetObject(MemoryStream bytes)
         {
-            return Serializar.ToTipoAceptado(tipoDatos, bytes.Read(NumeroBytes));
+            return Serializar.ToObjetoAceptado(TipoDatos, bytes);
         }
     }
     public abstract class ElementoComplejoBinario : ElementoBinario
@@ -356,9 +311,8 @@ namespace Gabriel.Cat.Binaris
                 partes = new Object[numItems];
                 for (long i = 0; i < numItems; i++)
                 {
-                    objHaPoner = Elemento.GetObject(bytes);
-                    if (objHaPoner != null)
-                        partes[i]=objHaPoner;
+                    partes[i] = Elemento.GetObject(bytes);
+                   
                 }
 
             }
@@ -473,7 +427,7 @@ namespace Gabriel.Cat.Binaris
     public class DateTimeBinario : ElementoSimpleBinario
     {
         public DateTimeBinario()
-            : base(Serializar.TiposAceptados.Long, 8)
+            : base(Serializar.TiposAceptados.Long)
         {
         }
         public override object GetObject(MemoryStream bytes)
