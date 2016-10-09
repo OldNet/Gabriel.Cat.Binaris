@@ -93,8 +93,8 @@ namespace Gabriel.Cat.Binaris
             List<Object> objsList = new List<object>(parts);
             List<byte> bytes = new List<byte>();
             bytes.AddRange(firma);
-            for (int i = 0; i < elementosArchivo.Count; i++)
-                bytes.AddRange(elementosArchivo[i].GetBytes(objsList[i]));
+              for (int i = 0; i < elementosArchivo.Count; i++)
+                 bytes.AddRange(elementosArchivo[i].GetBytes(objsList[i]));
             return bytes.ToArray();
         }
 
