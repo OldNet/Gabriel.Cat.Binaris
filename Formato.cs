@@ -67,6 +67,7 @@ namespace Gabriel.Cat.Binaris
         }
         public Llista<ElementoBinario> ElementosArchivo
         {
+            
             get { return elementosArchivo; }
             private set { elementosArchivo = value; }
         }
