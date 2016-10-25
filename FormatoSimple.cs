@@ -82,8 +82,8 @@ namespace Gabriel.Cat.Binaris
 
        public void SetBytes(MemoryStream stream)
        {
-           string firmaLeidaHex=stream.Read(firma.Length).ToHex();
-           if (firma.ToHex() !=firmaLeidaHex )
+           string firmaLeidaHex= (Hex)stream.Read(firma.Length);
+           if ((Hex)firma !=firmaLeidaHex )
                throw new TipoException("La firma no coincide");
            este.SetBytes(stream);
        }

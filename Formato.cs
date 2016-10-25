@@ -41,7 +41,7 @@ namespace Gabriel.Cat.Binaris
         public Formato(byte[] firma, IEnumerable<ElementoBinario> elementos)
             : this(firma)
         {
-            elementosArchivo.AfegirMolts(elementos);
+            elementosArchivo.AddRange(elementos);
         }
         public Formato(byte[] firma)
         {
@@ -81,7 +81,7 @@ namespace Gabriel.Cat.Binaris
         public Object[] GetPartsOfObject(MemoryStream st)
         {
             List<Object> objs = new List<object>();
-            if (st.Read(firma.Length).ToHex() != firma.ToHex())
+            if ((Hex)st.Read(firma.Length) != (Hex)firma)
                 throw new Exception("La stream no pertenece al formato, contiene una firma no esperada...");
             for (int i = 0; i < elementosArchivo.Count; i++)
             {
@@ -357,7 +357,7 @@ namespace Gabriel.Cat.Binaris
     {
         public BitmapBinario()
         {
-            PartesElemento.Afegir(new ElementoIEnumerableBinario(ElementosTipoAceptado(Serializar.TiposAceptados.Byte), ElementoIEnumerableBinario.LongitudBinaria.Long));
+            PartesElemento.Add(new ElementoIEnumerableBinario(ElementosTipoAceptado(Serializar.TiposAceptados.Byte), ElementoIEnumerableBinario.LongitudBinaria.Long));
         }
         public override object GetObject(MemoryStream bytes)
         {
