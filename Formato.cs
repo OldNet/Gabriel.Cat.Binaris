@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using System.Threading.Tasks;
-using Gabriel.Cat;
 using System.IO;
 using System.Drawing;
 using Gabriel.Cat.Extension;
@@ -111,25 +109,24 @@ namespace Gabriel.Cat.Binaris
         public static ElementoBinario ElementosTipoAceptado(Serializar.TiposAceptados tipo)
         {
             ElementoBinario elemento;
-            if (tipo == Serializar.TiposAceptados.String)
-                elemento = new StringBinario();
-            else if (tipo == Serializar.TiposAceptados.Bitmap)
-                elemento = new BitmapBinario();
-            else if (tipo == Serializar.TiposAceptados.DateTime)
-                elemento = new DateTimeBinario();
-            else
-                elemento = new ElementoSimpleBinario(tipo);
+            switch(tipo)
+            {
+                case Serializar.TiposAceptados.String: elemento = new StringBinario();break;
+                case Serializar.TiposAceptados.Bitmap: elemento = new BitmapBinario(); break;
+                default: elemento = new ElementoBinarioTamañoFijo(tipo); break;
+            }
             return elemento;
         }
 
     }
-
-    public class ElementoSimpleBinario : ElementoBinario
+    /// <summary>
+    /// los tipos que no son variables se serializan con esta clase
+    /// </summary>
+    public class ElementoBinarioTamañoFijo : ElementoBinario
     {
-        //char,int,long,...basicos
         Serializar.TiposAceptados tipoDatos;
 
-        public ElementoSimpleBinario(Serializar.TiposAceptados tipo)
+        public ElementoBinarioTamañoFijo(Serializar.TiposAceptados tipo)
         {
             TipoDatos = tipo;
         }
@@ -138,8 +135,8 @@ namespace Gabriel.Cat.Binaris
             get { return tipoDatos; }
             set
             {
-                if (value == Serializar.TiposAceptados.String || value == Serializar.TiposAceptados.Bitmap)
-                    throw new TipoException(String.Format("el tipo {0} no es un tipo simple", value.ToString()));
+                if (value <Serializar.TiposAceptados.Null)//lo menores son de longitud variable
+                    throw new TipoException(String.Format("el tipo {0} no es un tipo de longitud fija ", value.ToString()));
                 tipoDatos = value;
             }
         }
@@ -196,7 +193,7 @@ namespace Gabriel.Cat.Binaris
         byte[] marcaFin;
         LongitudBinaria longitud;
         ElementoBinario elemento;
-        public ElementoIEnumerableBinario(ElementoBinario elemento, LongitudBinaria unidadCantidadElementos)
+        public ElementoIEnumerableBinario(ElementoBinario elemento, LongitudBinaria unidadCantidadElementos=LongitudBinaria.Long)
         {
             Elemento = elemento;
             MarcaFin = null;
@@ -350,6 +347,10 @@ namespace Gabriel.Cat.Binaris
             return partes;
 
         }
+        public static new ElementoIEnumerableBinario ElementosTipoAceptado(Serializar.TiposAceptados tipo)
+        {
+            return new ElementoIEnumerableBinario(ElementoBinario.ElementosTipoAceptado(tipo));
+        }
     }
 
     //clases concretas pasadas al sistema
@@ -424,20 +425,6 @@ namespace Gabriel.Cat.Binaris
         }
 
 
-    }
-    public class DateTimeBinario : ElementoSimpleBinario
-    {
-        public DateTimeBinario()
-            : base(Serializar.TiposAceptados.Long)
-        {
-        }
-        public override object GetObject(MemoryStream bytes)
-        {
-            object objTime = base.GetObject(bytes);
-            if (objTime != null)
-                return new DateTime((long)objTime);
-            else return null;
-        }
     }
     //Excepcion propia
     public class TipoException : Exception
