@@ -324,7 +324,7 @@ namespace Gabriel.Cat.Binaris
                 bufferStreamBytes = bytes.GetBuffer();
                 try
                 {
-                    bytesObj = bufferStreamBytes.SubArray((Hex)bytes.Position, bufferStreamBytes.BuscarArray((Hex)bytes.Position, marcaFin));
+                    bytesObj = bufferStreamBytes.SubArray((int)bytes.Position,(int) bufferStreamBytes.BuscarArray((int)bytes.Position, marcaFin));
 
                     //ahora tengo los bytes tengo que obtener los elementos
                     bytes = new MemoryStream(bytesObj);

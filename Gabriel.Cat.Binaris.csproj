@@ -31,6 +31,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Gabriel.Cat.Utilitats">
+      <HintPath>..\Gabriel.Cat.Utilitats\Gabriel.Cat.Utilitats\bin\Release\Gabriel.Cat.Utilitats.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
@@ -46,12 +49,6 @@
     <Compile Include="Formato.cs" />
     <Compile Include="FormatoSimple.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Gabriel.Cat.Utilitats\Gabriel.Cat.Utilitats\Gabriel.Cat.Utilitats.csproj">
-      <Project>{6FDF9BB1-AE07-4820-BEEE-A2F52CFBE770}</Project>
-      <Name>Gabriel.Cat.Utilitats</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
