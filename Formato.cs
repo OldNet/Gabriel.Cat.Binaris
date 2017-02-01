@@ -419,8 +419,20 @@ namespace Gabriel.Cat.Binaris
             List<object> caracteres = new List<object>();
             string str = obj as string;
             if (str != null)
-                for (int i = 0; i < str.Length; i++)
-                    caracteres.Add(str[i]);
+                unsafe
+                {
+                    char* ptrStr;
+                    fixed (char* ptStr = str)
+                    {
+                        ptrStr = ptStr;
+                        for (int i = 0; i < str.Length; i++)
+                        {
+                            caracteres.Add(*ptrStr);
+                            ptrStr++;
+                        }
+                    }
+                }
+
             return base.GetBytes(caracteres);
         }
 
