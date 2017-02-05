@@ -149,7 +149,7 @@ namespace Gabriel.Cat.Binaris
        }
        public void Añadir(object obj)
        {
-           if(obj!=null&&!(obj is IElementoBinario || Serializar.AsseblyQualifiedNameTiposMicrosoft.Contains(obj.GetType().AssemblyQualifiedName)))
+           if(obj!=null&&!(obj is IElementoBinario || ((IList<string>)Serializar.AsseblyQualifiedNameTiposMicrosoft).Contains(obj.GetType().AssemblyQualifiedName)))
                throw new TipoException("El objeto no se puede serializar con el sistema actual!");
           objs.Add(obj);
 
@@ -213,7 +213,7 @@ namespace Gabriel.Cat.Binaris
                    //bytes
                    bytesPartObject = ((object[])datos.GetObject(bytes)).Casting<byte>().ToArray();
                    //si es tipoAceptado
-                   if (Serializar.AsseblyQualifiedNameTiposMicrosoft.Contains(assemblyNamePartObjecte))
+                   if (((IList<string>)Serializar.AsseblyQualifiedNameTiposMicrosoft).Contains(assemblyNamePartObjecte))
                    {
                        objs.Add(Serializar.ToTipoAceptado(assemblyNamePartObjecte, bytesPartObject));
                    }
