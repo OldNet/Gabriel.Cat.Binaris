@@ -97,8 +97,6 @@ namespace Gabriel.Cat.Binaris
             return bytes.ToArray();
         }
 
-
-
     }
     public abstract class ElementoBinario
     {
