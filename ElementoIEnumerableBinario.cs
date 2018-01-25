@@ -46,8 +46,8 @@ namespace Gabriel.Cat.Binaris
 			set {
 				if (value == null)
 					value = new byte[] {
-						0x00
-					};
+					0x00
+				};
 				marcaFin = value;
 				Longitud = LongitudBinaria.MarcaFin;
 			}
@@ -80,40 +80,46 @@ namespace Gabriel.Cat.Binaris
 		/// <returns></returns>
 		public override byte[] GetBytes(object obj)
 		{
+			
 			IList lst=obj as IList;
 			if (lst==null)
 				throw new TipoException("El objeto no es IList");
 			
-			List<byte> bytesObj = new List<byte>();
+			List<byte[]> partes = new List<byte[]>();
 			long numItems = 0;
-			
-			
+			byte[] longitud=null;
+			byte[] bytesObjs=null;
 			for(int i=0;i<lst.Count;i++)
 			{
 				numItems++;
-				bytesObj.AddRange(Elemento.GetBytes(lst[i]));
+				partes.Add(Elemento.GetBytes(lst[i]));
 			}
 			
 			switch (Longitud) {
 				case LongitudBinaria.Byte:
-					bytesObj.InsertRange(0, Serializar.GetBytes(Convert.ToByte(numItems)));
+					longitud= Serializar.GetBytes(Convert.ToByte(numItems));
 					break;
 				case LongitudBinaria.UShort:
-					bytesObj.InsertRange(0, Serializar.GetBytes(Convert.ToUInt16(numItems)));
+					longitud=  Serializar.GetBytes(Convert.ToUInt16(numItems));
 					break;
 				case LongitudBinaria.UInt:
-					bytesObj.InsertRange(0, Serializar.GetBytes(Convert.ToUInt32(numItems)));
+					longitud=  Serializar.GetBytes(Convert.ToUInt32(numItems));
 					break;
 				case LongitudBinaria.Long:
-					bytesObj.InsertRange(0, Serializar.GetBytes(Convert.ToInt64(numItems)));
+					longitud=  Serializar.GetBytes(Convert.ToInt64(numItems));
 					break;
 				case LongitudBinaria.MarcaFin:
-					if (bytesObj.Contains(MarcaFin))
+					bytesObjs=new byte[0].AddArray(partes);  
+					if (bytesObjs.SearchArray(MarcaFin)>0)
 						throw new Exception("Se ha encontrado los bytes de la marca de fin en los bytes a guardar");
-					bytesObj.AddRange(MarcaFin);
+					bytesObjs=bytesObjs.AddArray(MarcaFin);
 					break;
 			}
-			return bytesObj.ToArray();
+			if(bytesObjs==null)
+			{
+				bytesObjs=longitud.AddArray(partes);
+			}
+			return bytesObjs;
 		}
 
 		public override object GetObject(MemoryStream bytes)
@@ -126,6 +132,7 @@ namespace Gabriel.Cat.Binaris
 			byte[] bufferStreamBytes, bytesObj;
 			ByteArrayStream bs = bytes;
 			Object objHaPoner = null;
+			int posMarcaFin;
 			// String marcaFiHex;
 			Object[] partes = null;
 			switch (Longitud) {
@@ -156,8 +163,10 @@ namespace Gabriel.Cat.Binaris
 				//si no coincide cojo el primer byte
 				//si coincide dejo de añadir bytes
 				bufferStreamBytes = bytes.GetBuffer();
-				try {
-					bytesObj = bufferStreamBytes.SubArray((int)bytes.Position, (int)bufferStreamBytes.SearchArray((int)bytes.Position, marcaFin));
+				
+				posMarcaFin=(int)bufferStreamBytes.SearchArray((int)bytes.Position, marcaFin);
+				if(posMarcaFin>0){
+					bytesObj = bufferStreamBytes.SubArray((int)bytes.Position, posMarcaFin);
 					//ahora tengo los bytes tengo que obtener los elementos
 					bytes = new MemoryStream(bytesObj);
 					do {
@@ -169,20 +178,20 @@ namespace Gabriel.Cat.Binaris
 					if (objects.Count != 0)
 						partes = objects.ToArray();
 				}
-				catch {
+				else
 					throw new FormatException("No se ha encontrado la marca de fin");
-				}
-			}
-			if (partes == null)
-				partes = new object[0];
-			return partes;
+			
 		}
-
-		public static new ElementoIListBinario ElementosTipoAceptado(Serializar.TiposAceptados tipo)
-		{
-			return new ElementoIListBinario(ElementoBinario.ElementosTipoAceptado(tipo));
-		}
+		if (partes == null)
+			partes = new object[0];
+		return partes;
 	}
+
+	public static new ElementoIListBinario ElementosTipoAceptado(Serializar.TiposAceptados tipo)
+	{
+		return new ElementoIListBinario(ElementoBinario.ElementosTipoAceptado(tipo));
+	}
+}
 }
 
 

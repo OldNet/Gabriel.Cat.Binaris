@@ -9,14 +9,18 @@ namespace Gabriel.Cat.Binaris
 {
 	public abstract class ElementoBinario
 	{
-		public abstract byte[] GetBytes(Object obj);
+		public byte[] GetBytes()
+		{
+			return GetBytes(this);
+		}
+		public abstract byte[] GetBytes(object obj);
 
-		public Object GetObject(byte[] bytes)
+		public object GetObject(byte[] bytes)
 		{
 			return GetObject(new MemoryStream(bytes));
 		}
 
-		public abstract Object GetObject(MemoryStream bytes);
+		public abstract object GetObject(MemoryStream bytes);
 
 		public static ElementoBinario ElementosTipoAceptado(Serializar.TiposAceptados tipo)
 		{
