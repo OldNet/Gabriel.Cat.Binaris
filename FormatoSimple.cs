@@ -115,7 +115,7 @@ namespace Gabriel.Cat.Binaris
    {
        public static bool ComprobarAssemblyName = true;
        StringBinario assemblyName;
-       ElementoIEnumerableBinario datos;
+       ElementoIListBinario datos;
        IElementoBinario objecte;
        List<object> objs;
        const string ASSEMBLYNULL = "NULL";
@@ -123,7 +123,7 @@ namespace Gabriel.Cat.Binaris
        {
            Objecte = obj;
            assemblyName = new StringBinario();
-           datos = new ElementoIEnumerableBinario(ElementoBinario.ElementosTipoAceptado(Serializar.TiposAceptados.Byte), (long)0);
+           datos = new ElementoIListBinario(ElementoBinario.ElementosTipoAceptado(Serializar.TiposAceptados.Byte), (long)0);
            objs=new List<object>();
        }
        public IElementoBinario Objecte
