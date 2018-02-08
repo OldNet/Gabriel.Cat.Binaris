@@ -19,8 +19,7 @@ namespace Gabriel.Cat.Binaris
 
 		public override object GetObject(MemoryStream bytes)
 		{
-			object[] caracteresObj = (object[])base.GetObject(bytes);
-			return new string((char[])caracteresObj[0]);
+			return new string((char[])base.GetObject(bytes));
 		}
 
 		public override byte[] GetBytes(object obj)
