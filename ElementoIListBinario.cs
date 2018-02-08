@@ -5,18 +5,21 @@ using System.IO;
 using System.Drawing;
 using Gabriel.Cat.Extension;
 using System.Collections;
+
 namespace Gabriel.Cat.Binaris
 {
-	public class ElementoIListBinario : ElementoBinario
+	public enum LongitudBinaria
 	{
-		public enum LongitudBinaria
-		{
-			Byte,
-			UShort,
-			UInt,
-			Long,
-			MarcaFin
-		}
+		Byte,
+		UShort,
+		UInt,
+		ULong,
+		MarcaFin
+	}
+	
+	public class ElementoIListBinario<T> : ElementoBinarioNullable
+	{
+		
 
 		byte[] marcaFin;
 
@@ -24,7 +27,7 @@ namespace Gabriel.Cat.Binaris
 
 		ElementoBinario elemento;
 
-		public ElementoIListBinario(ElementoBinario elemento, LongitudBinaria unidadCantidadElementos = LongitudBinaria.Long)
+		public ElementoIListBinario(ElementoBinario elemento, LongitudBinaria unidadCantidadElementos = LongitudBinaria.ULong)
 		{
 			Elemento = elemento;
 			MarcaFin = null;
@@ -73,43 +76,47 @@ namespace Gabriel.Cat.Binaris
 			}
 		}
 
+		#region implemented abstract members of ElementoBinarioNullable
+		protected override byte[] IGetBytes(object obj)
+		{
+			return GetBytes((IList<T>)obj);
+		}
+
+		#endregion
+		
 		/// <summary>
 		/// Obtiene los bytes de la lista de elementos
 		/// </summary>
 		/// <param name="obj">IList</param>
 		/// <returns></returns>
-		public override byte[] GetBytes(object obj)
+		public 	byte[] GetBytes(IList<T> lst)
 		{
 			
-			IList lst=obj as IList;
-			if (lst==null)
-				throw new TipoException("El objeto no es IList");
-			
-			List<byte[]> partes = new List<byte[]>();
-			long numItems = 0;
+			object[] partes =new object[lst.Count];
 			byte[] longitud=null;
 			byte[] bytesObjs=null;
+			
 			for(int i=0;i<lst.Count;i++)
 			{
-				numItems++;
-				partes.Add(Elemento.GetBytes(lst[i]));
+				
+				partes[i]=Elemento.GetBytes(lst[i]);
 			}
 			
 			switch (Longitud) {
 				case LongitudBinaria.Byte:
-					longitud= Serializar.GetBytes(Convert.ToByte(numItems));
+					longitud= Serializar.GetBytes(Convert.ToByte(partes.Length));
 					break;
 				case LongitudBinaria.UShort:
-					longitud=  Serializar.GetBytes(Convert.ToUInt16(numItems));
+					longitud=  Serializar.GetBytes(Convert.ToUInt16(partes.Length));
 					break;
 				case LongitudBinaria.UInt:
-					longitud=  Serializar.GetBytes(Convert.ToUInt32(numItems));
+					longitud=  Serializar.GetBytes(Convert.ToUInt32(partes.Length));
 					break;
-				case LongitudBinaria.Long:
-					longitud=  Serializar.GetBytes(Convert.ToInt64(numItems));
+				case LongitudBinaria.ULong:
+					longitud=  Serializar.GetBytes(Convert.ToInt64(partes.LongLength));
 					break;
 				case LongitudBinaria.MarcaFin:
-					bytesObjs=new byte[0].AddArray(partes);  
+					bytesObjs=new byte[0].AddArray(partes.Casting<byte[]>());
 					if (bytesObjs.SearchArray(MarcaFin)>0)
 						throw new Exception("Se ha encontrado los bytes de la marca de fin en los bytes a guardar");
 					bytesObjs=bytesObjs.AddArray(MarcaFin);
@@ -117,43 +124,41 @@ namespace Gabriel.Cat.Binaris
 			}
 			if(bytesObjs==null)
 			{
-				bytesObjs=longitud.AddArray(partes);
+				bytesObjs=longitud.AddArray(partes.Casting<byte[]>());
 			}
 			return bytesObjs;
 		}
-
-		public override object GetObject(MemoryStream bytes)
+		protected override object IGetObject(MemoryStream bytes)
 		{
+			
 			//la marca fin y la longitud Que Se usara  y el elemento es el minimo...
-			long numItems = -1;
-			List<object> objects = new List<object>();
+			ulong? numItems = null;
+			List<T> objects = new List<T>();
 			Llista<byte> compruebaBytes = new Llista<byte>();
 			List<byte> bytesElementoMarcaFin = new List<byte>();
 			byte[] bufferStreamBytes, bytesObj;
-			ByteArrayStream bs = bytes;
-			Object objHaPoner = null;
+			object objHaPoner;
 			int posMarcaFin;
-			// String marcaFiHex;
-			Object[] partes = null;
+			T[] partes = null;
+			
 			switch (Longitud) {
 				case LongitudBinaria.Byte:
-					numItems = bytes.ReadByte();
+					numItems =Convert.ToUInt64(bytes.ReadByte());
 					break;
 				case LongitudBinaria.UShort:
 					numItems = Serializar.ToUShort(bytes.Read(2));
 					break;
 				case LongitudBinaria.UInt:
 					numItems = Serializar.ToUInt(bytes.Read(4));
-					;
 					break;
-				case LongitudBinaria.Long:
-					numItems = Serializar.ToLong(bytes.Read(8));
+				case LongitudBinaria.ULong:
+					numItems = Serializar.ToULong(bytes.Read(8));
 					break;
 			}
-			if (numItems >= 0) {
-				partes = new Object[numItems];
-				for (long i = 0; i < numItems; i++) {
-					partes[i] = Elemento.GetObject(bytes);
+			if (numItems.HasValue) {
+				partes = new T[numItems.Value];
+				for (ulong i = 0,f=numItems.Value; i < f; i++) {
+					partes[i] =(T) Elemento.GetObject(bytes);
 				}
 			}
 			else {
@@ -172,7 +177,7 @@ namespace Gabriel.Cat.Binaris
 					do {
 						objHaPoner = Elemento.GetObject(bytes);
 						if (objHaPoner != null)
-							objects.Add(objHaPoner);
+							objects.Add((T)objHaPoner);
 					}
 					while (objHaPoner != null && !bytes.EndOfStream());
 					if (objects.Count != 0)
@@ -180,18 +185,18 @@ namespace Gabriel.Cat.Binaris
 				}
 				else
 					throw new FormatException("No se ha encontrado la marca de fin");
-			
+				
+			}
+			if (partes == null)
+				partes = new T[0];
+			return partes;
 		}
-		if (partes == null)
-			partes = new object[0];
-		return partes;
-	}
 
-	public static new ElementoIListBinario ElementosTipoAceptado(Serializar.TiposAceptados tipo)
-	{
-		return new ElementoIListBinario(ElementoBinario.ElementosTipoAceptado(tipo));
+		public static new ElementoIListBinario<T> ElementosTipoAceptado<T>(Serializar.TiposAceptados tipo)
+		{
+			return new ElementoIListBinario<T>(ElementoBinario.ElementosTipoAceptado(tipo));
+		}
 	}
-}
 }
 
 

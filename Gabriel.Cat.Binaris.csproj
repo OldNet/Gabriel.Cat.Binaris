@@ -63,9 +63,11 @@
     <Compile Include="ByteArrayStream.cs" />
     <Compile Include="ClaseExtension.cs" />
     <Compile Include="ElementoBinario.cs" />
+    <Compile Include="ElementoBinarioNullable.cs" />
     <Compile Include="ElementoBinarioTamañoFijo.cs" />
     <Compile Include="ElementoComplejoBinario.cs" />
-    <Compile Include="ElementoIEnumerableBinario.cs" />
+    <Compile Include="ElementoComplejoBinarioNullable.cs" />
+    <Compile Include="ElementoIListBinario.cs" />
     <Compile Include="Formato.cs" />
     <Compile Include="FormatoSimple.cs" />
     <Compile Include="ObjectNotSerializable.cs" />

@@ -9,6 +9,8 @@ namespace Gabriel.Cat.Binaris
 {
 	public abstract class ElementoBinario
 	{
+		public const byte NULL=0x0;
+		
 		public byte[] GetBytes()
 		{
 			return GetBytes(this);

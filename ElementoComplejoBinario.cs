@@ -7,40 +7,20 @@ using Gabriel.Cat.Extension;
 using System.Collections;
 namespace Gabriel.Cat.Binaris
 {
-	public abstract class ElementoComplejoBinario : ElementoBinario
+	/// <summary>
+	/// ermite serializar y deserializar partes de un elemento
+	/// </summary>
+	public abstract class ElementoComplejoBinario : ElementoComplejoBinarioNullable
 	{
-		Llista<ElementoBinario> partesElemento;
-
-		public ElementoComplejoBinario()
+		public override byte[] GetBytes(object obj)
 		{
-			partesElemento = new Llista<ElementoBinario>();
+			return IGetBytes(obj);
 		}
-
-		public Llista<ElementoBinario> PartesElemento {
-			get {
-				return partesElemento;
-			}
-			private set {
-				partesElemento = value;
-			}
-		}
-
 		public override object GetObject(MemoryStream bytes)
 		{
-			object[] parts = new object[partesElemento.Count];
-			long numNull = 0;
-			for (int i = 0; i < parts.Length; i++) {
-				parts[i] = partesElemento[i].GetObject(bytes);
-				if (parts[i] == null)
-					numNull++;
-			}
-			if (numNull != parts.Length)
-				return GetObject(parts);
-			else
-				return null;
+			return IGetObject(bytes);
 		}
 
-		protected abstract object GetObject(Object[] parts);
 	}
 }
 

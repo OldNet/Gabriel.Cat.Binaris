@@ -7,43 +7,42 @@ using Gabriel.Cat.Extension;
 using System.Collections;
 namespace Gabriel.Cat.Binaris
 {
-	public class BitmapBinario : ElementoComplejoBinario
+	public class BitmapBinario : ElementoComplejoBinarioNullable
 	{
 		public BitmapBinario()
 		{
-			PartesElemento.Add(new ElementoIListBinario(ElementosTipoAceptado(Serializar.TiposAceptados.Byte), ElementoIListBinario.LongitudBinaria.Long));
+			Partes.Add(new ElementoIListBinario<byte>(ElementosTipoAceptado(Serializar.TiposAceptados.Byte)));
+		}
+		
+
+		#region implemented abstract members of ElementoComplejoBinarioNullable
+
+
+		protected override IList GetPartsObject(object obj)
+		{
+			Bitmap bmp=obj as Bitmap;
+			if(bmp==null)
+				throw new Exception(string.Format("Se ha intentado leer {0} como System.Drawing.Bitmap",obj.GetType().FullName));
+			return new object[]{Serializar.GetBytes(bmp)};
 		}
 
-		public override object GetObject(MemoryStream bytes)
+
+		#endregion
+		protected override object IGetObject(MemoryStream bytes)
 		{
-			Object obj = null;
-			if (bytes.ReadByte() != (byte)0x00) {
-				bytes.Position--;
-				obj = base.GetObject(bytes);
+		
+			byte[] bytesBmp=(byte[]) ((base.GetPartsObject(bytes))[0]);
+			Bitmap bmp;
+			try{
+				bmp=Serializar.ToBitmap(bytesBmp);
+			}catch{
+				
+				throw new Exception("El formato no coincide con un Bitmap");
 			}
-			return obj;
-		}
-
-		protected override object GetObject(object[] parts)
-		{
-			Bitmap bmp = null;
-			if (parts.Length == 1 && parts[0] is object[])
-				bmp = Serializar.ToBitmap(((object[])parts[0]).CastingToByte());
 			return bmp;
 		}
-
-		public override byte[] GetBytes(object obj)
-		{
-			List<byte> bytes = new List<byte>();
-			Bitmap bmp = obj as Bitmap;
-			if (bmp != null) {
-				bytes.AddRange(Serializar.GetBytes(bmp));
-				bytes.InsertRange(0, Serializar.GetBytes(Convert.ToInt64(bytes.Count)));
-			}
-			else
-				bytes.Add((byte)0x0);
-			return bytes.ToArray();
-		}
+		
+		
 	}
 }
 

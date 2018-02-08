@@ -7,9 +7,9 @@ using Gabriel.Cat.Extension;
 using System.Collections;
 namespace Gabriel.Cat.Binaris
 {
-	public class StringBinario : ElementoIListBinario
+	public class StringBinario : ElementoIListBinario<char>
 	{
-		public StringBinario() : base(ElementoBinario.ElementosTipoAceptado(Serializar.TiposAceptados.Char), LongitudBinaria.UInt)
+		public StringBinario() : base(ElementoBinario.ElementosTipoAceptado(Serializar.TiposAceptados.Char), LongitudBinaria.ULong)
 		{
 		}
 
@@ -20,41 +20,15 @@ namespace Gabriel.Cat.Binaris
 		public override object GetObject(MemoryStream bytes)
 		{
 			object[] caracteresObj = (object[])base.GetObject(bytes);
-			char[] caracteres;
-			if (caracteresObj != null) {
-				caracteres = new char[caracteresObj.Length];
-				unsafe {
-					char* ptrCaracteres;
-					fixed (char* ptCaracteres = caracteres) {
-						ptrCaracteres = ptCaracteres;
-						for (int i = 0; i < caracteres.Length; i++) {
-							*ptrCaracteres = (char)caracteresObj[i];
-							ptrCaracteres++;
-						}
-					}
-				}
-			}
-			else
-				caracteres = new char[0];
-			return new string(caracteres);
+			return new string((char[])caracteresObj[0]);
 		}
 
 		public override byte[] GetBytes(object obj)
 		{
-			List<object> caracteres = new List<object>();
 			string str = obj as string;
-			if (str != null)
-				unsafe {
-					char* ptrStr;
-					fixed (char* ptStr = str) {
-						ptrStr = ptStr;
-						for (int i = 0; i < str.Length; i++) {
-							caracteres.Add(*ptrStr);
-							ptrStr++;
-						}
-					}
-				}
-			return base.GetBytes(caracteres);
+			if(str==null)
+				throw new ArgumentException(String.Format("Se tiene que serializar {0}","".GetType().FullName));
+			return base.GetBytes(str.ToCharArray());
 		}
 	}
 }
