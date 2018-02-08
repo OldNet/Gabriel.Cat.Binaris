@@ -27,7 +27,7 @@ namespace Gabriel.Cat.Binaris
 				this.partes.AddRange(partes);
 		}
 
-		public Llista<ElementoBinario> Partes {
+		protected Llista<ElementoBinario> Partes {
 			get {
 				return partes;
 			}

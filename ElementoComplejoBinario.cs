@@ -12,6 +12,8 @@ namespace Gabriel.Cat.Binaris
 	/// </summary>
 	public abstract class ElementoComplejoBinario : ElementoComplejoBinarioNullable
 	{
+		public ElementoComplejoBinario(IEnumerable<ElementoBinario> partes=null):base(partes)
+		{}
 		public override byte[] GetBytes(object obj)
 		{
 			return IGetBytes(obj);
