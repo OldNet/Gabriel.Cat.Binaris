@@ -75,7 +75,7 @@ namespace Gabriel.Cat.Binaris
 				List<object> partes=new List<object>();
 				for(int i=0;i<propiedades.Length;i++)
 				{
-					if(propiedades[i].Tipo.Uso==usoNecesario&&ElementoBinario.IsCompatible(propiedades[i].Objeto))
+					if(propiedades[i].Tipo.Uso==usoNecesario&&ElementoBinario.IsCompatible(propiedades[i].Tipo.Tipo))
 						partes.Add(propiedades[i].Objeto);
 				}
 				return partes;
@@ -86,7 +86,7 @@ namespace Gabriel.Cat.Binaris
 				Propiedad[] propiedades=obj.GetProperties();
 				for(int i=0,j=0;i<propiedades.Length;i++)
 				{
-					if(propiedades[i].Tipo.Uso==usoNecesario&&ElementoBinario.IsCompatible(partes[j]))
+					if(propiedades[i].Tipo.Uso==usoNecesario&&ElementoBinario.IsCompatible(partes[j].GetType()))
 						obj.SetProperty(propiedades[i].Tipo.Nombre,partes[j++]);
 				}
 				return obj;

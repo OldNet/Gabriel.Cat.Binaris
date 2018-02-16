@@ -41,27 +41,39 @@ namespace Gabriel.Cat.Binaris
 			return elemento;
 		}
 
-		public static bool IsCompatible(object obj)
+		public static bool IsCompatible(Type tipo)
 		{
-			bool compatible=obj is ElementoBinario;
+			bool compatible=tipo.GetInterface(typeof(IElementoBinarioComplejo).Name)!=null;
 			if(!compatible){
 				try{
-					Serializar.GetType(obj);
+					Serializar.AssemblyToEnumTipoAceptado(tipo.AssemblyQualifiedName);
 					compatible=true;
 				}catch{compatible=false;}
 			}
 			return compatible;
 		}
-
+		/// <summary>
+		/// Devuelve el serializador del objeto pasado como parametro
+		/// </summary>
+		/// <param name="obj">se tendrá en cuenta si implementa IElementoBinarioComplejo.</param>
+		/// <returns>si no es compatible es null</returns>
 		public static ElementoBinario GetElementoBinario(object obj)
 		{
-			ElementoBinario elemento=obj as ElementoBinario;
+			IElementoBinarioComplejo serializador=obj as IElementoBinarioComplejo;
+			ElementoBinario elemento=serializador!=null?serializador.Serialitzer:null;
 			if(elemento==null){
 				try{
 					elemento=ElementosTipoAceptado(Serializar.GetType(obj));
-				}catch{elemento=null;}
+				}catch{}
 			}
 			return elemento;
+		}
+	}
+	public interface IElementoBinarioComplejo
+	{
+		ElementoBinario Serialitzer
+		{
+			get;
 		}
 	}
 }
