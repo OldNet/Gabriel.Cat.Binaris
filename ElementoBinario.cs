@@ -40,6 +40,29 @@ namespace Gabriel.Cat.Binaris
 			}
 			return elemento;
 		}
+
+		public static bool IsCompatible(object obj)
+		{
+			bool compatible=obj is ElementoBinario;
+			if(!compatible){
+				try{
+					Serializar.GetType(obj);
+					compatible=true;
+				}catch{compatible=false;}
+			}
+			return compatible;
+		}
+
+		public static ElementoBinario GetElementoBinario(object obj)
+		{
+			ElementoBinario elemento=obj as ElementoBinario;
+			if(elemento==null){
+				try{
+					elemento=ElementosTipoAceptado(Serializar.GetType(obj));
+				}catch{elemento=null;}
+			}
+			return elemento;
+		}
 	}
 }
 
