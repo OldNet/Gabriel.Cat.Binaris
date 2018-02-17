@@ -53,6 +53,31 @@ namespace Gabriel.Cat.Binaris
 			return compatible;
 		}
 		/// <summary>
+		/// Obtiene el Serializador del tipo indicado como parametro
+		/// </summary>
+		/// <param name="tipo">tipo con constructor sin parametros si es IElementoBinarioComplejo</param>
+		/// <returns>devuelve null si no es compatible</returns>
+		public static ElementoBinario GetElementoBinario(Type tipo)
+		{
+			ElementoBinario elementoBinario;
+			if(IsCompatible(tipo))
+			{
+				if(tipo.GetInterface(typeof(IElementoBinarioComplejo).Name)!=null)
+				{
+					try{
+					elementoBinario=((IElementoBinarioComplejo)tipo.GetConstructor(Type.EmptyTypes).Invoke(null)).Serialitzer;
+					}catch{
+						throw new ArgumentException(String.Format("El tipo tiene que tener un constructor publico sin parametros y la propiedad de {0} tener valor.",typeof(IElementoBinarioComplejo).Name));
+					
+					}
+				}else{
+				
+				elementoBinario=ElementosTipoAceptado(Serializar.GetType(tipo));
+				}
+			}else elementoBinario=null;
+			return elementoBinario;
+		}
+		/// <summary>
 		/// Devuelve el serializador del objeto pasado como parametro
 		/// </summary>
 		/// <param name="obj">se tendrá en cuenta si implementa IElementoBinarioComplejo.</param>

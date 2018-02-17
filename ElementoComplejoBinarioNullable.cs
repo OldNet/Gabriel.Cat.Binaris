@@ -68,37 +68,41 @@ namespace Gabriel.Cat.Binaris
 		
 		public static ElementoComplejoBinarioNullable GetElement<T>()where T:new()
 		{
-			
+			const UsoPropiedad USONECESARIO=UsoPropiedad.Get|UsoPropiedad.Set;
 			GetPartsObjectMethod getPartsObj=(obj)=>{
-				UsoPropiedad usoNecesario=UsoPropiedad.Get|UsoPropiedad.Set;
+				
 				Propiedad[] propiedades=obj.GetProperties();
 				List<object> partes=new List<object>();
 				for(int i=0;i<propiedades.Length;i++)
 				{
-					if(propiedades[i].Tipo.Uso==usoNecesario&&ElementoBinario.IsCompatible(propiedades[i].Tipo.Tipo))
+					if(propiedades[i].Info.Uso==USONECESARIO&&ElementoBinario.IsCompatible(propiedades[i].Info.Tipo))
 						partes.Add(propiedades[i].Objeto);
 				}
 				return partes;
 			};
 			GetObjectMethod getObject=(partes)=>{
-				UsoPropiedad usoNecesario=UsoPropiedad.Get|UsoPropiedad.Set;
+				
 				T obj=new T();
 				Propiedad[] propiedades=obj.GetProperties();
 				for(int i=0,j=0;i<propiedades.Length;i++)
 				{
-					if(propiedades[i].Tipo.Uso==usoNecesario&&ElementoBinario.IsCompatible(partes[j].GetType()))
-						obj.SetProperty(propiedades[i].Tipo.Nombre,partes[j++]);
+					if(propiedades[i].Info.Uso==USONECESARIO&&ElementoBinario.IsCompatible(partes[j].GetType()))
+						obj.SetProperty(propiedades[i].Info.Nombre,partes[j++]);
 				}
 				return obj;
 			};
 			
-			IList partesObj=getPartsObj(new T());
-			ElementoBinario[] elementos=new ElementoBinario[partesObj.Count];
+
+			PropiedadTipo[] properties=typeof(T).GetPropiedades();
+			List<ElementoBinario> elementos=new List<ElementoBinario>();
 			
-			for(int i=0;i<partesObj.Count;i++)
+			for(int i=0;i<properties.Length;i++)
 			{
-				elementos[i]=ElementoBinario.GetElementoBinario(partesObj[i]); 
+				if(properties[i].Uso==USONECESARIO&&ElementoBinario.IsCompatible(properties[i].Tipo))
+					elementos[i]=ElementoBinario.GetElementoBinario(properties[i].Tipo);
 			}
+			
+			
 			
 			return new ElementoComplejoBinarioNullableExt(elementos,getPartsObj,getObject);
 		}
