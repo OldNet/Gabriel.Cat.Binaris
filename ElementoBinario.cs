@@ -72,7 +72,7 @@ namespace Gabriel.Cat.Binaris
 					}
 				}else{
 				
-				elementoBinario=ElementosTipoAceptado(Serializar.GetType(tipo));
+				elementoBinario=ElementosTipoAceptado(Serializar.AssemblyToEnumTipoAceptado(tipo.AssemblyQualifiedName));
 				}
 			}else elementoBinario=null;
 			return elementoBinario;

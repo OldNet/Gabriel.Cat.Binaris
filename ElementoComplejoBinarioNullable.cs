@@ -99,7 +99,7 @@ namespace Gabriel.Cat.Binaris
 			for(int i=0;i<properties.Length;i++)
 			{
 				if(properties[i].Uso==USONECESARIO&&ElementoBinario.IsCompatible(properties[i].Tipo))
-					elementos[i]=ElementoBinario.GetElementoBinario(properties[i].Tipo);
+					elementos.Add(ElementoBinario.GetElementoBinario(properties[i].Tipo));
 			}
 			
 			

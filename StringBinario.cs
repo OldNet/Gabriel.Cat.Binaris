@@ -29,6 +29,10 @@ namespace Gabriel.Cat.Binaris
 				throw new ArgumentException(String.Format("Se tiene que serializar {0}","".GetType().FullName));
 			return base.GetBytes(str.ToCharArray());
 		}
+		public override string ToString()
+		{
+			return "TipoDatos=String";
+		}
 	}
 }
 

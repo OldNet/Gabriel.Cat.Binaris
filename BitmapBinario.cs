@@ -41,7 +41,10 @@ namespace Gabriel.Cat.Binaris
 			}
 			return bmp;
 		}
-		
+		public override string ToString()
+		{
+			return "TipoDatos=Bitmap";
+		}
 		
 	}
 }

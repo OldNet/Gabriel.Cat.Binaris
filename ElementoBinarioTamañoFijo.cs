@@ -40,6 +40,11 @@ namespace Gabriel.Cat.Binaris
 		{
 			return Serializar.ToObjetoAceptado(TipoDatos, bytes);
 		}
+		public override string ToString()
+		{
+			return string.Format("TipoDatos={0}", tipoDatos);
+		}
+
 	}
 }
 
