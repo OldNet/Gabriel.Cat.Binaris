@@ -49,7 +49,7 @@ namespace Gabriel.Cat.Binaris
 			else compatible=IsCompatible(tipo.GetType());
 			
 			return compatible;
-				
+			
 		}
 		public static bool IsCompatible(Type tipo)
 		{
@@ -97,14 +97,19 @@ namespace Gabriel.Cat.Binaris
 			IElementoBinarioComplejo serializador=obj as IElementoBinarioComplejo;
 			ElementoBinario elemento=serializador!=null?serializador.Serialitzer:null;
 			IList lst;
+			Type tipoLst;
 			if(elemento==null){
 				lst=obj as IList;
 				if(lst!=null)
 				{
 					try{
-						//el tipo que devuelve ListOfWhat no es el normal...se tiene que corregir en el metodo ListOfWhat...a poder ser sino en Serializar.GetType...
-						elemento=ElementoIListBinario<object>.ElementosTipoAceptado(Serializar.GetType(lst.ListOfWhat()));
-					}catch{}
+						tipoLst=lst.ListOfWhat();
+						
+						elemento=(ElementoBinario)Activator.CreateInstance(typeof(ElementoIListBinario<>).MakeGenericType(tipoLst),new Object[]{ ElementoBinario.ElementosTipoAceptado(Serializar.AssemblyToEnumTipoAceptado(tipoLst.AssemblyQualifiedName)),LongitudBinaria.ULong});
+		
+					}catch(Exception ex){
+					
+					}
 				}
 				else{
 					

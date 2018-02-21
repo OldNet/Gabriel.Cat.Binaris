@@ -16,8 +16,12 @@ namespace Gabriel.Cat.Binaris
 		ULong,
 		MarcaFin
 	}
-	
-	public class ElementoIListBinario<T> : ElementoBinarioNullable
+	public interface IElementoBinarioIList
+	{
+		ElementoBinario Elemento
+		{get;set;}
+	}
+	public class ElementoIListBinario<T> : ElementoBinarioNullable,IElementoBinarioIList
 	{
 		
 
@@ -27,6 +31,7 @@ namespace Gabriel.Cat.Binaris
 
 		ElementoBinario elemento;
 
+	
 		public ElementoIListBinario(ElementoBinario elemento, LongitudBinaria unidadCantidadElementos = LongitudBinaria.ULong)
 		{
 			Elemento = elemento;
