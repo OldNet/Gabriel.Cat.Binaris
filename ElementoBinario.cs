@@ -40,7 +40,17 @@ namespace Gabriel.Cat.Binaris
 			}
 			return elemento;
 		}
-
+		public static bool IsCompatible(object tipo)
+		{
+			IList lst=tipo as IList;
+			bool compatible;
+			if(lst!=null)
+				compatible=IsCompatible(lst.ListOfWhat());
+			else compatible=IsCompatible(tipo.GetType());
+			
+			return compatible;
+				
+		}
 		public static bool IsCompatible(Type tipo)
 		{
 			bool compatible=tipo.GetInterface(typeof(IElementoBinarioComplejo).Name)!=null;
@@ -65,14 +75,14 @@ namespace Gabriel.Cat.Binaris
 				if(tipo.GetInterface(typeof(IElementoBinarioComplejo).Name)!=null)
 				{
 					try{
-					elementoBinario=((IElementoBinarioComplejo)tipo.GetConstructor(Type.EmptyTypes).Invoke(null)).Serialitzer;
+						elementoBinario=((IElementoBinarioComplejo)tipo.GetConstructor(Type.EmptyTypes).Invoke(null)).Serialitzer;
 					}catch{
 						throw new ArgumentException(String.Format("El tipo tiene que tener un constructor publico sin parametros y la propiedad de {0} tener valor.",typeof(IElementoBinarioComplejo).Name));
-					
+						
 					}
 				}else{
-				
-				elementoBinario=ElementosTipoAceptado(Serializar.AssemblyToEnumTipoAceptado(tipo.AssemblyQualifiedName));
+					
+					elementoBinario=ElementosTipoAceptado(Serializar.AssemblyToEnumTipoAceptado(tipo.AssemblyQualifiedName));
 				}
 			}else elementoBinario=null;
 			return elementoBinario;
@@ -86,10 +96,23 @@ namespace Gabriel.Cat.Binaris
 		{
 			IElementoBinarioComplejo serializador=obj as IElementoBinarioComplejo;
 			ElementoBinario elemento=serializador!=null?serializador.Serialitzer:null;
+			IList lst;
 			if(elemento==null){
-				try{
-					elemento=ElementosTipoAceptado(Serializar.GetType(obj));
-				}catch{}
+				lst=obj as IList;
+				if(lst!=null)
+				{
+					try{
+						//el tipo que devuelve ListOfWhat no es el normal...se tiene que corregir en el metodo ListOfWhat...a poder ser sino en Serializar.GetType...
+						elemento=ElementoIListBinario<object>.ElementosTipoAceptado(Serializar.GetType(lst.ListOfWhat()));
+					}catch{}
+				}
+				else{
+					
+					try{
+						elemento=ElementosTipoAceptado(Serializar.GetType(obj));
+					}catch{}
+				}
+				
 			}
 			return elemento;
 		}

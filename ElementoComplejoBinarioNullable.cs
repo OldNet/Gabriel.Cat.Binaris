@@ -69,13 +69,14 @@ namespace Gabriel.Cat.Binaris
 		public static ElementoComplejoBinarioNullable GetElement<T>()where T:new()
 		{
 			const UsoPropiedad USONECESARIO=UsoPropiedad.Get|UsoPropiedad.Set;
+			const UsoPropiedad USOILISTNECESARIO=UsoPropiedad.Get;
 			GetPartsObjectMethod getPartsObj=(obj)=>{
 				
 				Propiedad[] propiedades=obj.GetProperties();
 				List<object> partes=new List<object>();
 				for(int i=0;i<propiedades.Length;i++)
 				{
-					if(propiedades[i].Info.Uso==USONECESARIO&&ElementoBinario.IsCompatible(propiedades[i].Info.Tipo))
+					if(propiedades[i].Info.Uso==USONECESARIO&&ElementoBinario.IsCompatible(propiedades[i].Info.Tipo)||propiedades[i].Objeto is IList&&propiedades[i].Info.Uso==USOILISTNECESARIO&&ElementoBinario.IsCompatible(propiedades[i].Objeto))
 						partes.Add(propiedades[i].Objeto);
 				}
 				return partes;
@@ -84,10 +85,21 @@ namespace Gabriel.Cat.Binaris
 				
 				T obj=new T();
 				Propiedad[] propiedades=obj.GetProperties();
+				IList lstAPoner;
+				IList lstObj;
 				for(int i=0,j=0;i<propiedades.Length;i++)
 				{
 					if(propiedades[i].Info.Uso==USONECESARIO&&ElementoBinario.IsCompatible(partes[j].GetType()))
 						obj.SetProperty(propiedades[i].Info.Nombre,partes[j++]);
+					else if(propiedades[i].Info.Uso==USOILISTNECESARIO &&partes[j].GetType().GetInterface("IList")!=null&&ElementoBinario.IsCompatible(partes[j]))
+					{
+						lstAPoner=partes[j++] as IList;
+						//cojo la lista del objeto y le añado la nueva
+						lstObj=obj.GetPropteryValue(propiedades[i].Info.Nombre) as IList;
+						
+						for(int k=0;k<lstAPoner.Count;k++)
+							lstObj.Add(lstAPoner[k]);
+					}
 				}
 				return obj;
 			};
@@ -95,11 +107,22 @@ namespace Gabriel.Cat.Binaris
 
 			PropiedadTipo[] properties=typeof(T).GetPropiedades();
 			List<ElementoBinario> elementos=new List<ElementoBinario>();
-			
+			IList list;
 			for(int i=0;i<properties.Length;i++)
 			{
 				if(properties[i].Uso==USONECESARIO&&ElementoBinario.IsCompatible(properties[i].Tipo))
 					elementos.Add(ElementoBinario.GetElementoBinario(properties[i].Tipo));
+				else if(properties[i].Uso==USOILISTNECESARIO&&properties[i].Tipo.GetInterface("IList")!=null)
+				{
+					
+	
+					list = (IList)Activator.CreateInstance(properties[i].Tipo);//mirar si lo hace correctamente 
+					if(ElementoBinario.IsCompatible(list.ListOfWhat()))
+					{
+						//si es de un tipo compatible lo añado
+						elementos.Add(ElementoBinario.GetElementoBinario(list));
+					}
+				}
 			}
 			
 			
