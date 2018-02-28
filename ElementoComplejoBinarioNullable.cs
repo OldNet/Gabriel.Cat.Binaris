@@ -114,13 +114,16 @@ namespace Gabriel.Cat.Binaris
 					elementos.Add(ElementoBinario.GetElementoBinario(properties[i].Tipo));
 				else if(properties[i].Uso==USOILISTNECESARIO&&properties[i].Tipo.GetInterface("IList")!=null)
 				{
-					
+					try{
 	
-					list = (IList)Activator.CreateInstance(properties[i].Tipo);//mirar si lo hace correctamente 
+					list = (IList)Activator.CreateInstance(properties[i].Tipo);
 					if(ElementoBinario.IsCompatible(list.ListOfWhat()))
 					{
 						//si es de un tipo compatible lo añado
 						elementos.Add(ElementoBinario.GetElementoBinario(list));
+					}}catch(Exception ex){
+						throw new PropiedadNoCompatibleException(properties[i],ex);
+					
 					}
 				}
 			}
@@ -154,5 +157,10 @@ namespace Gabriel.Cat.Binaris
 		}
 		#endregion
 		
+	}
+	public class PropiedadNoCompatibleException:Exception
+	{
+		public PropiedadNoCompatibleException(PropiedadTipo propiedad,Exception ex):base(string.Format("Propiedad '{0}' del tipo '{1}' no es compatible: '{2}'",propiedad.Nombre,propiedad.Tipo,ex.Message))
+		{}
 	}
 }
